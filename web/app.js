@@ -160,6 +160,41 @@ function copyTrendingSound() {
   }
 }
 
+async function searchCustomOnlineSound() {
+  const input = document.getElementById('customSoundQuery');
+  const query = input ? input.value.trim() : '';
+  if (!query) {
+    alert('Please enter a sound vibe or instrument (e.g. "cyberpunk electronic", "lofi acoustic guitar", "ambient techno")');
+    return;
+  }
+  showLoading(`Searching online open catalog for "${query}" & downloading fresh track...`);
+  try {
+    const res = await fetch('/api/search-music', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: query })
+    });
+    const data = await res.json();
+    if (data.success) {
+      if (currentCampaign) {
+        if (!currentCampaign.audio_profile) currentCampaign.audio_profile = {};
+        currentCampaign.audio_profile.search_query = query;
+        currentCampaign.audio_profile.title = `Fresh Online Beat: ${query}`;
+        currentCampaign.audio_profile.genre = "Dynamic AI Search Match";
+        currentCampaign.audio_profile.situation = "CUSTOM_SITUATION";
+        populateEditor(currentCampaign);
+      }
+      alert(`✅ Fresh music found & downloaded!\nTrack: ${data.filename}\nClick "Update Reel" to mix this new track into your video.`);
+    } else {
+      alert(`Search notice: ${data.error || 'No matching audio found'}`);
+    }
+  } catch (err) {
+    alert(`Error fetching sound: ${err.message}`);
+  } finally {
+    hideLoading();
+  }
+}
+
 // 6. Display Previews
 function displayPreviews(campaign) {
   // Poster

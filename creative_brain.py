@@ -5,24 +5,70 @@ from config import BRAND_NAME, BRAND_URL, WHATSAPP_DEMO_LINK, GEMINI_API_KEY
 from knowledge_vault.evaluator import score_creative
 import music_fetcher
 
-def classify_audio_situation(category, headline=""):
+def analyze_audio_situation(category, headline="", news_title=""):
     """
-    Classifies campaign situation into one of 4 emotional archetypes:
-    BREAKING_TENSION, TECH_SPEED_FLEX, PRICE_DISRUPTION, CAFE_AMBIANCE.
+    Intelligent AI Sound Director: Analyzes the unique situation of each campaign
+    and generates tailored audio keywords for dynamic online search.
     """
     cat = (category or "").upper()
-    hl = (headline or "").lower()
+    text = f"{category} {headline} {news_title}".lower()
 
-    if "15,000" in hl or "petpooja" in hl or "sachet" in hl or "lock-in" in hl:
-        return "PRICE_DISRUPTION"
-    elif "0.8" in hl or "speed" in hl or "hardware" in hl or "thermal" in hl or "peak" in hl:
-        return "TECH_SPEED_FLEX"
-    elif cat == "AGGREGATOR_EXPLOITATION" or "fee" in hl or "swiggy" in hl or "zomato" in hl or "gst" in hl or "commission" in hl:
-        return "BREAKING_TENSION"
-    elif cat == "RESTAURANT_GROWTH" or "dine" in hl or "customer" in hl or "cafe" in hl or "phone" in hl:
-        return "CAFE_AMBIANCE"
+    if any(k in text for k in ["15,000", "petpooja", "sachet", "renewal", "lock-in", "license", "pricing", "annual fee"]):
+        return {
+            "situation": "PRICE_DISRUPTION",
+            "situation_label": "💸 Bold Sachet Disruption",
+            "search_query": "electronic bass rhythm future bass",
+            "title": "Future Bass & Punchy Disruptor",
+            "genre": "Bold Disruption / Sachet Fight",
+            "trending_ig_tip": "AP Dhillon — Dil Nu Instrumental (Punchy bass beat)",
+            "bgm_volume": 0.18
+        }
+    elif any(k in text for k in ["0.8", "speed", "hardware", "thermal", "kot", "kitchen", "printer", "sub-second", "rush", "peak"]):
+        return {
+            "situation": "TECH_SPEED_FLEX",
+            "situation_label": "⚡ High-Velocity Hardware Pulse",
+            "search_query": "techno synthesizer electronic beat",
+            "title": "Kinetic Electronic Tempo",
+            "genre": "High Velocity / Hardware Flex",
+            "trending_ig_tip": "Interworld — Metamorphosis (High-energy speed flex)",
+            "bgm_volume": 0.18
+        }
+    elif any(k in text for k in ["swiggy", "zomato", "fee", "commission", "aggregator", "exploitation", "protest", "gst", "hike", "monopoly"]):
+        return {
+            "situation": "BREAKING_TENSION",
+            "situation_label": "🚨 Breaking Controversy Tension",
+            "search_query": "ambient synthesizer dramatic ambient",
+            "title": "Dramatic Tension & News Expose",
+            "genre": "Suspense / High Stakes",
+            "trending_ig_tip": "Else — Paris (Popular for exposés & fee hike reactions)",
+            "bgm_volume": 0.18
+        }
+    elif any(k in text for k in ["dine", "table", "cafe", "ambiance", "coffee", "customer", "loyalty", "breakfast", "monsoon", "dessert"]):
+        return {
+            "situation": "CAFE_AMBIANCE",
+            "situation_label": "☕ Warm Cafe Acoustic Lounge",
+            "search_query": "acoustic piano lounge chill guitar",
+            "title": "Warm Acoustic & Chill Cafe Lounge",
+            "genre": "Acoustic / Customer Experience",
+            "trending_ig_tip": "Lofi Fruits Music — Coffee & Chill (Smooth coffeehouse vibe)",
+            "bgm_volume": 0.18
+        }
     else:
-        return "BREAKING_TENSION"
+        # Custom topic fallback: Derive dynamic keywords directly from the headline
+        clean_words = [w for w in re.findall(r'\b[a-zA-Z]{4,}\b', text) if w not in ["with", "from", "that", "this", "have", "your"]]
+        custom_kw = " ".join(clean_words[:3]) if clean_words else "ambient electronic synthesizer"
+        return {
+            "situation": "CUSTOM_SITUATION",
+            "situation_label": f"🎵 Custom Situation ({' '.join(clean_words[:2]).title() or 'Dynamic'})",
+            "search_query": f"{custom_kw} synthesizer",
+            "title": "Custom Dynamic Online Beat",
+            "genre": "Dynamic AI Live Match",
+            "trending_ig_tip": "Trending Commercial Sound (Matched for topic)",
+            "bgm_volume": 0.18
+        }
+
+def classify_audio_situation(category, headline=""):
+    return analyze_audio_situation(category, headline)["situation"]
 
 def build_deterministic_creative(topic_item):
     """
@@ -173,15 +219,7 @@ def build_deterministic_creative(topic_item):
             "#restaurantmanagement #cafeoperations #smartdining #cafeqr #tableturnover #indianfoodtech #qrsolutions #smartpos"
         )
 
-    situation = classify_audio_situation(category, headline)
-    audio_info = music_fetcher.get_audio_info(situation)
-    audio_profile = {
-        "situation": situation,
-        "title": audio_info["title"],
-        "genre": audio_info["genre"],
-        "trending_ig_tip": audio_info["trending_ig_tip"],
-        "bgm_volume": 0.18
-    }
+    audio_profile = analyze_audio_situation(category, headline, raw_title)
 
     return {
         "headline": headline,

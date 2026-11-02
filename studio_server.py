@@ -190,6 +190,25 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 self._send_json({"success": False, "error": str(e)})
             return
 
+        # 3c. API: Live Search & Download Custom Online Music
+        elif path == "/api/search-music":
+            query = body.get("query", "").strip()
+            if not query:
+                self._send_json({"success": False, "error": "Query required"})
+                return
+            downloaded_path = music_fetcher.search_and_download_online_music(query)
+            if downloaded_path:
+                rel_url = f"/drafts/audio_cache/{os.path.basename(downloaded_path)}"
+                self._send_json({
+                    "success": True,
+                    "file_path": downloaded_path,
+                    "audio_url": rel_url,
+                    "filename": os.path.basename(downloaded_path)
+                })
+            else:
+                self._send_json({"success": False, "error": "No matching royalty-free audio found for this query."})
+            return
+
         # 4. API: 1-Click Publish to Meta (Facebook & Instagram)
         elif path == "/api/publish":
             image_path = body.get("image_path")

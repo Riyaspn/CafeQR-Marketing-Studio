@@ -222,6 +222,10 @@
                 <label for="bgmVolumeSlider">BGM Volume: <span id="bgmVolumeVal">18%</span></label>
                 <input type="range" id="bgmVolumeSlider" min="0" max="40" value="18" step="2" oninput="updateBgmVolume(this.value)">
               </div>
+              <div class="sound-custom-search-row">
+                <input type="text" id="customSoundQuery" placeholder="AI Search: e.g. dark synth, lofi cafe, techno beat..." />
+                <button type="button" class="btn btn-sm btn-accent" onclick="searchCustomOnlineSound()">🌐 Fetch New</button>
+              </div>
             </div>
           </div>
 

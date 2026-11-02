@@ -329,7 +329,8 @@ def render_reel_video(creative_data, voice_key="prabhat", filename=None):
     audio_profile = creative_data.get("audio_profile", {})
     situation = audio_profile.get("situation", "BREAKING_TENSION")
     bgm_volume = float(audio_profile.get("bgm_volume", 0.18))
-    bgm_path = music_fetcher.get_track_for_situation(situation)
+    search_query = audio_profile.get("search_query") or audio_profile.get("search_prompt")
+    bgm_path = music_fetcher.fetch_or_search_music(search_query=search_query, situation_key=situation)
 
     if bgm_path and os.path.exists(bgm_path) and bgm_volume > 0.001:
         print(f"🎵 Mixing background music: {os.path.basename(bgm_path)} at volume {bgm_volume}")

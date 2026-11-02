@@ -902,3 +902,45 @@ body {
   cursor: pointer;
 }
 
+.sound-custom-search-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.sound-custom-search-row input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 7px 12px;
+  color: white;
+  font-size: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.sound-custom-search-row input:focus {
+  border-color: #FF7A00;
+}
+
+.sound-custom-search-row button {
+  background: rgba(255, 122, 0, 0.2);
+  border: 1px solid #FF7A00;
+  color: #FF9933;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+
+.sound-custom-search-row button:hover {
+  background: #FF7A00;
+  color: white;
+}
+
+
