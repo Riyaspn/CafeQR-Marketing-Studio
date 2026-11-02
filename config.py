@@ -49,6 +49,7 @@ PRICING_BOLT_ON_UDHAAR = 499      # Credit Ledger (Udhaar) Tabs: ₹499/year
 PRICING_BOLT_ON_CRM = 999         # Customer CRM & Loyalty: ₹999/year
 PRICING_BOLT_ON_INVENTORY = 1999  # Inventory, Purchase & Stock ERP: ₹1,999/year
 PRICING_BOLT_ON_BARCODE = 999     # Barcode Scanning & Label Printing: ₹999/year
+PRICING_BOLT_ON_HR_PAYROLL = 1999 # HR & Staff Payroll Management: ₹1,999/year
 
 # Brand Design Tokens
 COLOR_PRIMARY = "#FF7A00"      # Hospitality Orange

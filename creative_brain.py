@@ -178,7 +178,8 @@ def build_deterministic_creative(topic_item):
             "📒 Credit Ledger (Udhaar) Tabs: ₹499/year\n"
             "🤝 Customer CRM & Loyalty: ₹999/year\n"
             "📦 Inventory, Purchase & Stock ERP: ₹1,999/year\n"
-            "🏷️ Barcode Scanning & Label Printing: ₹999/year\n\n"
+            "🏷️ Barcode Scanning & Label Printing: ₹999/year\n"
+            "👥 HR & Staff Payroll: ₹1,999/year\n\n"
             "Stop overpaying for features you do not use and secure an unbeatable renewal rate for your business.\n\n"
             f"👉 Reply 'DEMO' or message us for a quick 2-minute video: {WHATSAPP_DEMO_LINK}\n\n"
             "📱 Get Cafe QR on Google Play: https://play.google.com/store/apps/details?id=com.cafeqr.app&hl=en_IN\n"
@@ -265,7 +266,7 @@ Cafe QR authentic product specs & pricing:
 - Core Base Plan: Year 1 is ₹2,498 (₹999 Annual Subscription + ₹1,499 One-Time Setup & Onboarding).
 - Year 2 & Beyond Renewal: Just ₹999/year! (Billing software renewal under ₹1,000/year forever; setup fee is never paid again).
 - Base Plan includes: Advanced Billing, Table QR Ordering, Digital Menus, & Quick-Commerce Delivery Integration!
-- Modular bolt-on add-ons: KOT Kitchen Order Tickets (₹499/yr), Credit Ledger Udhaar Tabs (₹499/yr), Customer CRM & Loyalty (₹999/yr), Inventory & Stock ERP (₹1,999/yr), Barcode Scanning & Label Printing (₹999/yr).
+- Modular bolt-on add-ons: KOT Kitchen Order Tickets (₹499/yr), Credit Ledger Udhaar Tabs (₹499/yr), Customer CRM & Loyalty (₹999/yr), Inventory & Stock ERP (₹1,999/yr), Barcode Scanning & Label Printing (₹999/yr), HR & Staff Payroll (₹1,999/yr).
 - Direct delivery: 0% Commission direct table ordering (Swiggy/Zomato charge 25-30%).
 - Hardware speed: 0.8s ESC/POS thermal printing with dynamic UPI QR on receipts.
 - Competitor contrast: Petpooja traps merchants with ₹15,000+ upfront and ₹3,000 to ₹5,000 annual renewals that never go down.
