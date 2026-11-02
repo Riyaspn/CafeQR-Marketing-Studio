@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1080px;
+    height: 1350px;
+    background: radial-gradient(circle at 80% 20%, rgba(255, 122, 0, 0.18) 0%, rgba(11, 15, 25, 1) 70%), #0B0F19;
+    color: #F8FAFC;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    position: relative;
+    overflow: hidden;
+    padding: 70px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  /* Decorative Grid & Orbs */
+  .grid-overlay {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  .glow-top-left {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    top: -150px;
+    left: -150px;
+    background: rgba(239, 68, 68, 0.15);
+    filter: blur(120px);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+
+  /* Top Bar */
+  .top-bar {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 24px;
+    z-index: 2;
+  }
+
+  .brand-badge {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo-box {
+    background: #FF7A00;
+    color: #0B0F19;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    font-size: 26px;
+    padding: 8px 18px;
+    border-radius: 12px;
+    letter-spacing: -0.5px;
+    box-shadow: 0 0 25px rgba(255, 122, 0, 0.4);
+  }
+
+  .brand-title {
+    font-size: 22px;
+    font-weight: 700;
+    color: #F8FAFC;
+    letter-spacing: 0.5px;
+  }
+
+  .category-pill {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #FCA5A5;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 8px 20px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .pulse-dot {
+    width: 10px;
+    height: 10px;
+    background: #EF4444;
+    border-radius: 50%;
+    box-shadow: 0 0 12px #EF4444;
+  }
+
+  /* Main Headline Content */
+  .content-hero {
+    position: relative;
+    z-index: 2;
+    margin-top: 30px;
+  }
+
+  .headline {
+    font-family: 'Outfit', sans-serif;
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    letter-spacing: -1.5px;
+    margin-bottom: 24px;
+  }
+
+  .headline span.highlight {
+    color: #FF7A00;
+    text-shadow: 0 0 40px rgba(255, 122, 0, 0.35);
+  }
+
+  .subtext {
+    font-size: 26px;
+    font-weight: 500;
+    color: #94A3B8;
+    line-height: 1.4;
+    max-width: 900px;
+  }
+
+  /* News Citation Card */
+  .news-card {
+    position: relative;
+    z-index: 2;
+    background: rgba(21, 28, 44, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(20px);
+    border-radius: 24px;
+    padding: 28px 32px;
+    margin: 25px 0;
+  }
+
+  .news-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .source-tag {
+    font-size: 14px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.1);
+    color: #CBD5E1;
+    padding: 4px 12px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .news-quote {
+    font-size: 22px;
+    font-style: italic;
+    color: #E2E8F0;
+    line-height: 1.35;
+    border-left: 4px solid #FF7A00;
+    padding-left: 18px;
+  }
+
+  /* Anti-Monopoly Solution Card */
+  .solution-box {
+    position: relative;
+    z-index: 2;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1.5px solid rgba(16, 185, 129, 0.35);
+    border-radius: 24px;
+    padding: 30px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  .metric-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .metric-label {
+    font-size: 15px;
+    font-weight: 700;
+    color: #94A3B8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .metric-value-bad {
+    font-family: 'Outfit', sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: #EF4444;
+  }
+
+  .metric-value-good {
+    font-family: 'Outfit', sans-serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: #10B981;
+    text-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
+  }
+
+  .metric-desc {
+    font-size: 16px;
+    color: #CBD5E1;
+    line-height: 1.3;
+  }
+
+  /* Bottom Bar & CTA */
+  .bottom-bar {
+    position: relative;
+    z-index: 2;
+    background: #FF7A00;
+    border-radius: 20px;
+    padding: 22px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 15px 35px rgba(255, 122, 0, 0.35);
+  }
+
+  .cta-text {
+    color: #0B0F19;
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.5px;
+  }
+
+  .cta-sub {
+    color: #27272A;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .cta-btn {
+    background: #0B0F19;
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    padding: 12px 28px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+</style>
+</head>
+<body>
+  <div class="grid-overlay"></div>
+  <div class="glow-top-left"></div>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="brand-badge">
+      <div class="logo-box">
+        <img src="{{logo_img}}" style="height:24px;width:auto;vertical-align:middle;margin-right:6px;" alt="Logo" />
+        CAFE QR
+      </div>
+      <div class="brand-title">RESTAURANT PROFIT RADAR</div>
+    </div>
+    <div class="category-pill">
+      <div class="pulse-dot"></div>
+      {{badge}}
+    </div>
+  </div>
+
+  <!-- Content Hero -->
+  <div class="content-hero">
+    <h1 class="headline">{{headline}}</h1>
+    <p class="subtext">{{subtext}}</p>
+  </div>
+
+  <!-- News Snippet Citation -->
+  <div class="news-card">
+    <div class="news-header">
+      <span class="source-tag">LIVE SOURCE: {{source_tag}}</span>
+    </div>
+    <div class="news-quote">"{{news_title}}"</div>
+  </div>
+
+  <!-- Anti-Monopoly Comparison -->
+  <div class="solution-box">
+    <div class="metric-block" style="border-right: 1px solid rgba(255,255,255,0.1); padding-right: 20px;">
+      <span class="metric-label">Aggregator Commission</span>
+      <span class="metric-value-bad">25% – 30%</span>
+      <span class="metric-desc">You lose ₹140 on every ₹500 bill + customer data hidden.</span>
+    </div>
+    <div class="metric-block" style="padding-left: 10px;">
+      <span class="metric-label">Cafe QR Direct System</span>
+      <span class="metric-value-good">0% COMMISSION</span>
+      <span class="metric-desc">Keep 100% of your earnings. Direct WhatsApp & QR orders.</span>
+    </div>
+  </div>
+
+  <!-- Bottom CTA Bar -->
+  <div class="bottom-bar">
+    <div>
+      <div class="cta-text">STOP GIVING 28% TO AGGREGATORS</div>
+      <div class="cta-sub">₹99/Month Sachet Pricing • Sub-Second Thermal KOT</div>
+    </div>
+    <div class="cta-btn">
+      COMMENT 'DEMO' &rarr;
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,212 @@
+import os
+import json
+import urllib.request
+import urllib.error
+import time
+from pathlib import Path
+from config import (
+    META_ACCESS_TOKEN,
+    CAFE_QR_PAGE_ID,
+    INSTAGRAM_ACCOUNT_ID,
+    META_AD_ACCOUNT_ID,
+    BRAND_URL
+)
+
+GRAPH_API_VERSION = "v22.0"
+BASE_GRAPH_URL = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
+
+def check_token_health(token=None):
+    """
+    Checks if the Meta Access Token is active and retrieves linked Facebook Page & Instagram account.
+    """
+    access_token = token or META_ACCESS_TOKEN
+    if not access_token:
+        return {
+            "status": "MISSING_TOKEN",
+            "message": "No Meta Access Token configured in .env",
+            "valid": False
+        }
+
+    url = f"{BASE_GRAPH_URL}/me?fields=id,name&access_token={access_token}"
+    try:
+        req = urllib.request.Request(url)
+        with urllib.request.urlopen(req, timeout=8) as res:
+            data = json.loads(res.read().decode())
+            
+            # Fetch Page details and linked Instagram account
+            page_url = f"{BASE_GRAPH_URL}/{CAFE_QR_PAGE_ID}?fields=name,username,instagram_business_account&access_token={access_token}"
+            page_data = {}
+            try:
+                page_req = urllib.request.Request(page_url)
+                with urllib.request.urlopen(page_req, timeout=8) as page_res:
+                    page_data = json.loads(page_res.read().decode())
+            except Exception:
+                pass
+
+            ig_id = page_data.get("instagram_business_account", {}).get("id") or INSTAGRAM_ACCOUNT_ID
+
+            return {
+                "status": "ACTIVE",
+                "valid": True,
+                "user_name": data.get("name", "Meta Account"),
+                "page_name": page_data.get("name", "Cafe QR Facebook Page"),
+                "page_id": CAFE_QR_PAGE_ID,
+                "instagram_id": ig_id or "Not Linked / Pending"
+            }
+    except urllib.error.HTTPError as e:
+        error_body = e.read().decode()
+        try:
+            err_json = json.loads(error_body)
+            msg = err_json.get("error", {}).get("message", "Token expired or invalid.")
+        except Exception:
+            msg = error_body
+        return {
+            "status": "EXPIRED",
+            "valid": False,
+            "message": msg,
+            "instructions": (
+                "Please generate a fresh Page Access Token from Meta Graph API Explorer "
+                "(https://developers.facebook.com/tools/explorer/) with 'pages_manage_posts', "
+                "'pages_read_engagement', 'instagram_basic', and 'instagram_content_publish' permissions."
+            )
+        }
+    except Exception as e:
+        return {
+            "status": "NETWORK_ERROR",
+            "valid": False,
+            "message": str(e)
+        }
+
+def publish_to_facebook_page(image_path=None, video_path=None, caption=""):
+    """
+    Publishes a photo or video directly to the Facebook Page using multipart upload.
+    Works directly from local filesystem without needing public URL staging!
+    """
+    if not META_ACCESS_TOKEN:
+        return {"success": False, "error": "Missing Meta Access Token"}
+
+    # Boundary for multipart form-data
+    boundary = "----WebKitFormBoundaryCafeQR" + hex(int(time.time() * 1000))[2:]
+
+    if video_path and os.path.exists(video_path):
+        url = f"https://graph-video.facebook.com/{GRAPH_API_VERSION}/{CAFE_QR_PAGE_ID}/videos"
+        file_path = video_path
+        field_name = "source"
+        mime_type = "video/mp4"
+        extra_fields = {"description": caption, "access_token": META_ACCESS_TOKEN}
+    elif image_path and os.path.exists(image_path):
+        url = f"{BASE_GRAPH_URL}/{CAFE_QR_PAGE_ID}/photos"
+        file_path = image_path
+        field_name = "source"
+        mime_type = "image/png"
+        extra_fields = {"caption": caption, "access_token": META_ACCESS_TOKEN}
+    else:
+        return {"success": False, "error": "No media file provided or file does not exist"}
+
+    # Build multipart request body
+    body = bytearray()
+    for key, val in extra_fields.items():
+        body.extend(f"--{boundary}\r\n".encode("utf-8"))
+        body.extend(f'Content-Disposition: form-data; name="{key}"\r\n\r\n'.encode("utf-8"))
+        body.extend(f"{val}\r\n".encode("utf-8"))
+
+    filename = os.path.basename(file_path)
+    body.extend(f"--{boundary}\r\n".encode("utf-8"))
+    body.extend(f'Content-Disposition: form-data; name="{field_name}"; filename="{filename}"\r\n'.encode("utf-8"))
+    body.extend(f"Content-Type: {mime_type}\r\n\r\n".encode("utf-8"))
+    with open(file_path, "rb") as f:
+        body.extend(f.read())
+    body.extend(b"\r\n")
+    body.extend(f"--{boundary}--\r\n".encode("utf-8"))
+
+    req = urllib.request.Request(
+        url,
+        data=body,
+        headers={
+            "Content-Type": f"multipart/form-data; boundary={boundary}",
+            "User-Agent": "CafeQR-MarketingEngine/2.0"
+        }
+    )
+
+    try:
+        with urllib.request.urlopen(req, timeout=60) as res:
+            res_data = json.loads(res.read().decode())
+            post_id = res_data.get("id") or res_data.get("post_id")
+            return {
+                "success": True,
+                "platform": "Facebook Page",
+                "post_id": post_id,
+                "permalink": f"https://facebook.com/{post_id}" if post_id else ""
+            }
+    except urllib.error.HTTPError as e:
+        err = e.read().decode()
+        return {"success": False, "platform": "Facebook Page", "error": err}
+    except Exception as e:
+        return {"success": False, "platform": "Facebook Page", "error": str(e)}
+
+def publish_to_instagram(media_public_url, caption="", is_video=False):
+    """
+    Publishes a photo or Reel to Instagram Business account via Meta Graph API.
+    Note: Instagram API requires an externally reachable HTTPS URL to ingest media.
+    """
+    if not META_ACCESS_TOKEN:
+        return {"success": False, "error": "Missing Meta Access Token"}
+    if not INSTAGRAM_ACCOUNT_ID:
+        return {"success": False, "error": "No linked Instagram Business Account ID specified"}
+
+    # Step 1: Create Media Container
+    container_url = f"{BASE_GRAPH_URL}/{INSTAGRAM_ACCOUNT_ID}/media"
+    params = {
+        "access_token": META_ACCESS_TOKEN,
+        "caption": caption
+    }
+    if is_video:
+        params["media_type"] = "REELS"
+        params["video_url"] = media_public_url
+    else:
+        params["image_url"] = media_public_url
+
+    encoded_params = urllib.parse.urlencode(params).encode("utf-8")
+    req = urllib.request.Request(container_url, data=encoded_params)
+
+    try:
+        with urllib.request.urlopen(req, timeout=30) as res:
+            res_data = json.loads(res.read().decode())
+            creation_id = res_data.get("id")
+
+        if not creation_id:
+            return {"success": False, "error": "Failed to create Instagram container"}
+
+        # For videos, poll status until 'FINISHED'
+        if is_video:
+            for _ in range(12):
+                time.sleep(5)
+                status_url = f"{BASE_GRAPH_URL}/{creation_id}?fields=status_code&access_token={META_ACCESS_TOKEN}"
+                status_res = json.loads(urllib.request.urlopen(status_url).read().decode())
+                if status_res.get("status_code") == "FINISHED":
+                    break
+                elif status_res.get("status_code") == "ERROR":
+                    return {"success": False, "error": "Instagram video transcoding failed"}
+
+        # Step 2: Publish Media Container
+        publish_url = f"{BASE_GRAPH_URL}/{INSTAGRAM_ACCOUNT_ID}/media_publish"
+        pub_params = urllib.parse.urlencode({
+            "creation_id": creation_id,
+            "access_token": META_ACCESS_TOKEN
+        }).encode("utf-8")
+        pub_req = urllib.request.Request(publish_url, data=pub_params)
+        with urllib.request.urlopen(pub_req, timeout=30) as pub_res:
+            pub_data = json.loads(pub_res.read().decode())
+            return {
+                "success": True,
+                "platform": "Instagram",
+                "post_id": pub_data.get("id")
+            }
+    except urllib.error.HTTPError as e:
+        return {"success": False, "platform": "Instagram", "error": e.read().decode()}
+    except Exception as e:
+        return {"success": False, "platform": "Instagram", "error": str(e)}
+
+if __name__ == "__main__":
+    health = check_token_health()
+    print("Meta API Status:", json.dumps(health, indent=2))

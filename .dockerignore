@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+drafts/*.png
+drafts/*.mp4
+drafts/*.mp3
+drafts/*.json
+.git/
+.gitignore
+run_studio.bat
+verify_studio.py

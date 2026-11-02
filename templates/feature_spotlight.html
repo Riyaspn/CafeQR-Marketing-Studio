@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1080px;
+    height: 1350px;
+    background: radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.15) 0%, rgba(11, 15, 25, 1) 70%), #0B0F19;
+    color: #F8FAFC;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    position: relative;
+    overflow: hidden;
+    padding: 70px 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* Header */
+  .top-row {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 24px;
+  }
+
+  .brand-logo {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 900;
+    font-size: 30px;
+    color: #FFFFFF;
+    letter-spacing: -0.5px;
+  }
+
+  .brand-logo span {
+    color: #FF7A00;
+  }
+
+  .badge-speed {
+    background: rgba(16, 185, 129, 0.15);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    color: #10B981;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 8px 20px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* Hero Section */
+  .hero-section {
+    position: relative;
+    z-index: 2;
+    margin: 30px 0;
+  }
+
+  .hero-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 64px;
+    font-weight: 900;
+    line-height: 1.1;
+    text-transform: uppercase;
+    margin-bottom: 18px;
+  }
+
+  .hero-title span {
+    color: #10B981;
+    text-shadow: 0 0 35px rgba(16, 185, 129, 0.4);
+  }
+
+  .hero-desc {
+    font-size: 24px;
+    color: #94A3B8;
+    line-height: 1.4;
+  }
+
+  /* 3-Step Flow Cards */
+  .flow-container {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+  }
+
+  .flow-step {
+    background: rgba(21, 28, 44, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 24px 20px;
+    backdrop-filter: blur(15px);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .step-number {
+    width: 36px;
+    height: 36px;
+    background: #FF7A00;
+    color: #0B0F19;
+    font-weight: 900;
+    font-size: 18px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .step-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: #FFFFFF;
+  }
+
+  .step-detail {
+    font-size: 15px;
+    color: #94A3B8;
+    line-height: 1.35;
+  }
+
+  /* Metric Flex Row */
+  .metrics-flex {
+    position: relative;
+    z-index: 2;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1.5px solid rgba(16, 185, 129, 0.3);
+    border-radius: 24px;
+    padding: 28px 36px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .stat-val {
+    font-family: 'Outfit', sans-serif;
+    font-size: 46px;
+    font-weight: 900;
+    color: #FFFFFF;
+  }
+
+  .stat-val.green {
+    color: #10B981;
+    text-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
+  }
+
+  .stat-val.orange {
+    color: #FF7A00;
+    text-shadow: 0 0 25px rgba(255, 122, 0, 0.35);
+  }
+
+  .stat-caption {
+    font-size: 14px;
+    font-weight: 700;
+    color: #CBD5E1;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  /* Bottom Bar */
+  .bottom-cta {
+    position: relative;
+    z-index: 2;
+    background: #10B981;
+    border-radius: 20px;
+    padding: 22px 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 15px 35px rgba(16, 185, 129, 0.3);
+  }
+
+  .cta-left {
+    color: #0B0F19;
+  }
+
+  .cta-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .cta-desc {
+    font-size: 15px;
+    font-weight: 700;
+    opacity: 0.9;
+  }
+
+  .cta-action {
+    background: #0B0F19;
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    padding: 12px 28px;
+    border-radius: 12px;
+  }
+</style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+
+  <!-- Top Row -->
+  <div class="top-row">
+    <div class="brand-logo"><img src="{{logo_img}}" style="height:32px;width:auto;vertical-align:middle;margin-right:8px;" alt="Logo" />CAFE <span>QR 2.0</span></div>
+    <div class="badge-speed">⚡ SUB-SECOND ENGINE</div>
+  </div>
+
+  <!-- Hero Section -->
+  <div class="hero-section">
+    <h1 class="hero-title">{{headline}}</h1>
+    <p class="hero-desc">{{subtext}}</p>
+  </div>
+
+  <!-- 3-Step Flow -->
+  <div class="flow-container">
+    <div class="flow-step">
+      <div class="step-number">1</div>
+      <div class="step-title">Diner Scans QR</div>
+      <div class="step-detail">No app download needed. Mobile visual menu loads in 0.5 seconds.</div>
+    </div>
+    <div class="flow-step">
+      <div class="step-number">2</div>
+      <div class="step-title">Kitchen Thermal KOT</div>
+      <div class="step-detail">Receipt spits in 0.8s on ESC/POS printer (USB / Bluetooth / WiFi).</div>
+    </div>
+    <div class="flow-step">
+      <div class="step-number">3</div>
+      <div class="step-title">Dynamic UPI QR</div>
+      <div class="step-detail">Instant payment QR printed on bill. Zero waiter waiting time.</div>
+    </div>
+  </div>
+
+  <!-- Metric Flex -->
+  <div class="metrics-flex">
+    <div>
+      <div class="stat-val green">0.8s</div>
+      <div class="stat-caption">Thermal Print Speed</div>
+    </div>
+    <div>
+      <div class="stat-val orange">+35%</div>
+      <div class="stat-caption">Faster Table Turnover</div>
+    </div>
+    <div>
+      <div class="stat-val green">0%</div>
+      <div class="stat-caption">Aggregator Cut</div>
+    </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="bottom-cta">
+    <div class="cta-left">
+      <div class="cta-title">UPGRADE YOUR BILLING TODAY</div>
+      <div class="cta-desc">7-Day Free Trial • Standee Kit & Hardware Setup Included</div>
+    </div>
+    <div class="cta-action">REPLY 'DEMO' &rarr;</div>
+  </div>
+</body>
+</html>

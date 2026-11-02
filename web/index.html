@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cafe QR 2.0 — Viral Marketing & Content Studio</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Top Navigation Bar -->
+  <header class="studio-header">
+    <div class="header-left">
+      <div class="logo-badge">CAFE <span>QR 2.0</span></div>
+      <div class="tagline">VIRAL MARKETING &amp; TREND-JACKING STUDIO</div>
+    </div>
+    <div class="header-right">
+      <div id="metaStatusBadge" class="status-pill status-checking" onclick="openSettingsModal()">
+        <span class="status-dot"></span>
+        <span id="metaStatusText">Checking Meta API...</span>
+      </div>
+      <button class="btn btn-secondary" onclick="loadTrends()">
+        <span>🔄</span> Refresh Trends
+      </button>
+      <button class="btn btn-secondary" onclick="openSettingsModal()">
+        <span>⚙️</span> API Settings
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Studio Workspace -->
+  <main class="studio-main">
+    
+    <!-- Left Column: Trend Radar -->
+    <aside class="sidebar-radar">
+      <div class="sidebar-header">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="section-title">
+            <span>⚡</span> Live F&amp;B Trend Radar
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="harvestIntel()" style="padding: 4px 10px; font-size: 11px;" title="Crawl competitor feeds & update Swipe Vault">🌾 Harvest</button>
+        </div>
+        <div class="section-subtitle">Real-time Indian restaurant news &amp; viral controversies</div>
+      </div>
+
+      <!-- Custom Topic Input -->
+      <div class="custom-input-card">
+        <input type="text" id="customTopicInput" placeholder="Or type any topic (e.g. Swiggy ₹10 fee)..." />
+        <button class="btn btn-primary btn-sm" onclick="generateFromCustom()">Generate</button>
+      </div>
+
+      <!-- Trend List Container -->
+      <div class="trend-list" id="trendList">
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Scanning Google News RSS for Indian F&amp;B controversies...</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Column: Creative Workbench -->
+    <section class="workbench">
+      
+      <!-- Top Action Bar -->
+      <div class="workbench-tabs">
+        <div class="tab-buttons">
+          <button class="tab-btn active" onclick="switchPreviewTab('poster')">🖼️ High-Res Poster (1080x1350)</button>
+          <button class="tab-btn" onclick="switchPreviewTab('reel')">🎬 9:16 Video Reel (MP4)</button>
+          <button class="tab-btn" onclick="loadDraftsGallery()">📁 Saved Drafts</button>
+        </div>
+        <div id="loadingIndicator" class="campaign-spinner hidden">
+          <div class="spinner-small"></div>
+          <span id="spinnerText">Rendering creative...</span>
+        </div>
+      </div>
+
+      <!-- Main Canvas & Controls Split -->
+      <div class="workbench-body">
+        
+        <!-- Left: Visual Preview Canvas -->
+        <div class="preview-panel">
+          
+          <!-- Poster Preview Tab -->
+          <div id="posterTab" class="preview-content">
+            <div id="posterPlaceholder" class="empty-preview">
+              <div class="empty-icon">🎨</div>
+              <h3>No Campaign Active</h3>
+              <p>Click any trending headline on the left or type a custom topic to generate a viral poster &amp; video.</p>
+            </div>
+            <div id="posterWrapper" class="poster-container hidden">
+              <img id="posterImg" src="" alt="Generated Cafe QR Poster" />
+              <div class="preview-actions">
+                <a id="posterDownloadLink" href="#" download="cafe_qr_poster.png" class="btn btn-secondary btn-sm">⬇️ Download High-Res PNG</a>
+                <button class="btn btn-secondary btn-sm" onclick="reRenderPoster()">🔄 Re-render Visual</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reel Video Preview Tab -->
+          <div id="reelTab" class="preview-content hidden">
+            <div id="reelPlaceholder" class="empty-preview">
+              <div class="empty-icon">🎬</div>
+              <h3>Video Reel Not Generated Yet</h3>
+              <p>Generate a campaign to synthesize the neural voiceover and render the 9:16 vertical Reel.</p>
+            </div>
+            <div id="reelWrapper" class="reel-container hidden">
+              <video id="reelVideo" controls autoplay loop playsinline>
+                <source id="reelVideoSource" src="" type="video/mp4">
+                Your browser does not support HTML5 video.
+              </video>
+              <div class="preview-actions">
+                <a id="reelDownloadLink" href="#" download="cafe_qr_reel.mp4" class="btn btn-secondary btn-sm">⬇️ Download Reel MP4</a>
+                <button class="btn btn-secondary btn-sm" onclick="reRenderReel()">🎬 Re-render Video</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Drafts Gallery Tab -->
+          <div id="draftsTab" class="preview-content hidden">
+            <div class="drafts-grid" id="draftsGrid"></div>
+          </div>
+
+        </div>
+
+        <!-- Right: Copywriting & Controls Workbench -->
+        <div class="editor-panel">
+          
+          <!-- Autonomous 10-Point Viral Rubric Scorecard -->
+          <div class="viral-rubric-card" id="viralRubricCard">
+            <div class="rubric-header" onclick="toggleRubricDetails()">
+              <div class="rubric-score-badge">
+                <span class="rubric-star">⭐</span>
+                <span class="rubric-title">Autonomous Viral Rubric</span>
+                <span class="rubric-score-pill grade-viral" id="rubricScorePill">9.4 / 10.0 • VIRAL READY</span>
+              </div>
+              <span class="rubric-toggle-arrow" id="rubricToggleArrow">▼</span>
+            </div>
+            
+            <div class="rubric-body" id="rubricDetails">
+              <div class="rubric-bars">
+                <div class="rubric-bar-item">
+                  <div class="bar-label"><span>Hook Velocity</span><strong id="scoreHook">2.0 / 2.0</strong></div>
+                  <div class="bar-track"><div class="bar-fill" id="fillHook" style="width: 100%;"></div></div>
+                </div>
+                <div class="rubric-bar-item">
+                  <div class="bar-label"><span>Empirical Math Proof</span><strong id="scoreMath">2.0 / 2.0</strong></div>
+                  <div class="bar-track"><div class="bar-fill" id="fillMath" style="width: 100%;"></div></div>
+                </div>
+                <div class="rubric-bar-item">
+                  <div class="bar-label"><span>Contrast Ratio</span><strong id="scoreContrast">2.0 / 2.0</strong></div>
+                  <div class="bar-track"><div class="bar-fill" id="fillContrast" style="width: 100%;"></div></div>
+                </div>
+                <div class="rubric-bar-item">
+                  <div class="bar-label"><span>Cognitive Ease</span><strong id="scoreEase">1.4 / 2.0</strong></div>
+                  <div class="bar-track"><div class="bar-fill" id="fillEase" style="width: 70%;"></div></div>
+                </div>
+                <div class="rubric-bar-item">
+                  <div class="bar-label"><span>CTA Urgency</span><strong id="scoreCTA">2.0 / 2.0</strong></div>
+                  <div class="bar-track"><div class="bar-fill" id="fillCTA" style="width: 100%;"></div></div>
+                </div>
+              </div>
+              <div class="rubric-tips" id="rubricTips">
+                <div class="tip-pill">💡 Creative perfectly aligned with Hormozi &amp; Schwartz viral rules.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Headline (Bold Punchy Hook)</label>
+            <input type="text" id="editHeadline" placeholder="e.g. SWIGGY & ZOMATO HIKE FEES AGAIN" />
+          </div>
+
+          <div class="form-group">
+            <label>Subtext / Merchant Pain Point</label>
+            <input type="text" id="editSubtext" placeholder="e.g. Customers pay ₹10 extra. You lose 28% per bill." />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-half">
+              <label>Poster Visual Template</label>
+              <select id="editTemplate">
+                <option value="agency_editorial">💎 Agency Editorial (Real Logo + Hardware Proof)</option>
+                <option value="news_alert">🚨 News Alert Card</option>
+                <option value="us_vs_them">⚖️ Us vs Them Matrix</option>
+                <option value="feature_spotlight">⚡ 0.8s Thermal KOT Flex</option>
+              </select>
+            </div>
+            <div class="form-group col-half">
+              <label>Reel Voiceover Artist</label>
+              <select id="editVoice">
+                <option value="prabhat">Prabhat (Indian Male)</option>
+                <option value="neerja">Neerja (Indian Female)</option>
+                <option value="christopher">Christopher (Tech Male)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Reel Voiceover Script (15–20 Seconds)</label>
+            <textarea id="editScript" rows="3" placeholder="Voiceover spoken by neural AI in the video reel..."></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Instagram &amp; Facebook Caption (With Hashtags &amp; WhatsApp CTA)</label>
+            <textarea id="editCaption" rows="6" placeholder="Full caption for social media..."></textarea>
+          </div>
+
+          <div class="form-actions-row">
+            <button class="btn btn-secondary" onclick="copyCaptionToClipboard()">📋 Copy Caption</button>
+            <button class="btn btn-secondary" onclick="reRenderPoster()">🖼️ Update Poster</button>
+            <button class="btn btn-secondary" onclick="reRenderReel()">🎬 Update Reel</button>
+          </div>
+
+          <!-- 1-Click Social Media Publish Bar -->
+          <div class="publish-dock">
+            <div class="dock-header">
+              <div class="dock-title">🚀 1-Click Meta Publishing</div>
+              <div class="platform-toggles">
+                <label class="toggle-label">
+                  <input type="checkbox" id="pubFacebook" checked /> Facebook Page
+                </label>
+                <label class="toggle-label">
+                  <input type="checkbox" id="pubInstagram" /> Instagram (Requires Public URL)
+                </label>
+              </div>
+            </div>
+            <div class="dock-action">
+              <button class="btn btn-publish" id="publishBtn" onclick="publishApprovedCampaign()">
+                APPROVE &amp; PUBLISH TO SOCIAL MEDIA
+              </button>
+            </div>
+            <div id="publishStatus" class="publish-feedback hidden"></div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Settings & Token Modal -->
+  <div id="settingsModal" class="modal-backdrop hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⚙️ Marketing Engine Settings</h3>
+        <button class="modal-close" onclick="closeSettingsModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          Update your Meta Graph API credentials and Google Gemini key. These are saved locally to your <code>.env</code> file.
+        </p>
+        
+        <div class="form-group">
+          <label>Meta Access Token (Page Access Token)</label>
+          <input type="password" id="cfgMetaToken" placeholder="EAAiVX..." />
+          <small>Generate from <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Meta Graph API Explorer</a> with <code>pages_manage_posts</code> permission.</small>
+        </div>
+
+        <div class="form-group">
+          <label>Google Gemini API Key (Optional Free Tier)</label>
+          <input type="password" id="cfgGeminiKey" placeholder="AIzaSy..." />
+          <small>Engine includes Hormozi-grade deterministic fallback if no key is provided.</small>
+        </div>
+
+        <div class="form-group">
+          <label>WhatsApp Demo Inbound Phone (e.g. 919400000000)</label>
+          <input type="text" id="cfgWhatsAppPhone" placeholder="919400000000" />
+        </div>
+
+        <div id="settingsSaveStatus" class="save-status hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeSettingsModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveSettings()">Save &amp; Verify Connection</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

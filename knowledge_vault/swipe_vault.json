@@ -1,0 +1,168 @@
+{
+  "vault_version": "2.0.0",
+  "last_harvested": "2026-10-31 04:11:19",
+  "total_swipes": 13,
+  "swipes": [
+    {
+      "angle": "Math Shock",
+      "headline": "WHY PAY 28% COMMISSION ON EVERY ORDER?",
+      "subtext": "Aggregators just raised platform fees again. Stop giving away your profit margin.",
+      "receipt_math": {
+        "bill": 500,
+        "aggregator_cut": 140,
+        "cafe_qr_cut": 0
+      },
+      "cta": "Reply DEMO for Free 7-Day Trial"
+    },
+    {
+      "angle": "Sachet Price Destruction",
+      "headline": "STOP PAYING ₹15,000 UPFRONT FOR POS",
+      "subtext": "Why lock your cash into bloated 1990s legacy software when Cafe QR is ₹99/month?",
+      "receipt_math": {
+        "petpooja_upfront": 15000,
+        "petpooja_yearly": 3000,
+        "cafe_qr_monthly": 99
+      },
+      "cta": "Claim Free Standees & Setup"
+    },
+    {
+      "angle": "Hardware Speed Flex",
+      "headline": "LOST BILLS & SLOW KOTS KILLING PEAK HOURS?",
+      "subtext": "Turn tables 35% faster with 0.8-second thermal KOT printing directly from table QR scans.",
+      "receipt_math": {
+        "print_speed": "0.8 seconds",
+        "turnover_boost": "+35%"
+      },
+      "cta": "Test The Sub-Second Demo"
+    },
+    {
+      "angle": "Customer Data Ownership",
+      "headline": "WHO ACTUALLY OWNS YOUR DINERS' PHONE NUMBERS?",
+      "subtext": "Delivery apps hide your customer data so they can sell to your competitors. Take it back.",
+      "receipt_math": {
+        "customer_retention": "100% Owned"
+      },
+      "cta": "Own Your Customer Database"
+    },
+    {
+      "angle": "Math Shock",
+      "headline": "WHY PAY 28% COMMISSION ON EVERY ORDER?",
+      "subtext": "Recent industry alert: 'Explained: The Zomato price-parity case and why restaurants oppose it'. Stop letting aggregators eat your net margin.",
+      "receipt_math": {
+        "bill": 500,
+        "aggregator_cut": 140,
+        "cafe_qr_cut": 0
+      },
+      "cta": "Reply DEMO for Free 7-Day Trial",
+      "origin_headline": "Explained: The Zomato price-parity case and why restaurants oppose it",
+      "source": "Business Standard",
+      "harvested_at": "2026-10-31 04:11:15"
+    },
+    {
+      "angle": "Math Shock",
+      "headline": "WHY PAY 28% COMMISSION ON EVERY ORDER?",
+      "subtext": "Recent industry alert: 'Bengaluru Restaurants’ Pushback Gives Rapido's Ownly An Opening Against Swiggy, Zomato'. Stop letting aggregators eat your net margin.",
+      "receipt_math": {
+        "bill": 500,
+        "aggregator_cut": 140,
+        "cafe_qr_cut": 0
+      },
+      "cta": "Reply DEMO for Free 7-Day Trial",
+      "origin_headline": "Bengaluru Restaurants’ Pushback Gives Rapido's Ownly An Opening Against Swiggy, Zomato",
+      "source": "Inc42",
+      "harvested_at": "2026-10-31 04:11:15"
+    },
+    {
+      "angle": "Math Shock",
+      "headline": "WHY PAY 28% COMMISSION ON EVERY ORDER?",
+      "subtext": "Recent industry alert: 'Rapido’s Ownly hits 7% of Bengaluru food delivery market, gears up for India expansion'. Stop letting aggregators eat your net margin.",
+      "receipt_math": {
+        "bill": 500,
+        "aggregator_cut": 140,
+        "cafe_qr_cut": 0
+      },
+      "cta": "Reply DEMO for Free 7-Day Trial",
+      "origin_headline": "Rapido’s Ownly hits 7% of Bengaluru food delivery market, gears up for India expansion",
+      "source": "Moneycontrol.com",
+      "harvested_at": "2026-10-31 04:11:15"
+    },
+    {
+      "angle": "Sachet Price Destruction",
+      "headline": "STOP PAYING ₹15,000 UPFRONT FOR POS",
+      "subtext": "Industry shifts: '6 Best Restaurant POS Systems: Ranked and Reviewed (2026)'. Switch to ₹99/month micro-sachet freedom.",
+      "receipt_math": {
+        "petpooja_upfront": 15000,
+        "petpooja_yearly": 3000,
+        "cafe_qr_monthly": 99
+      },
+      "cta": "Claim Free Standees & Setup",
+      "origin_headline": "6 Best Restaurant POS Systems: Ranked and Reviewed (2026)",
+      "source": "G2 Learn Hub",
+      "harvested_at": "2026-10-31 04:11:16"
+    },
+    {
+      "angle": "Sachet Price Destruction",
+      "headline": "STOP PAYING ₹15,000 UPFRONT FOR POS",
+      "subtext": "Industry shifts: 'Petpooja: Streamlining Restaurant Management with AI Integration'. Switch to ₹99/month micro-sachet freedom.",
+      "receipt_math": {
+        "petpooja_upfront": 15000,
+        "petpooja_yearly": 3000,
+        "cafe_qr_monthly": 99
+      },
+      "cta": "Claim Free Standees & Setup",
+      "origin_headline": "Petpooja: Streamlining Restaurant Management with AI Integration",
+      "source": "Goodcall",
+      "harvested_at": "2026-10-31 04:11:16"
+    },
+    {
+      "angle": "Sachet Price Destruction",
+      "headline": "STOP PAYING ₹15,000 UPFRONT FOR POS",
+      "subtext": "Industry shifts: 'My Review of the 9 Best Restaurant Management Software'. Switch to ₹99/month micro-sachet freedom.",
+      "receipt_math": {
+        "petpooja_upfront": 15000,
+        "petpooja_yearly": 3000,
+        "cafe_qr_monthly": 99
+      },
+      "cta": "Claim Free Standees & Setup",
+      "origin_headline": "My Review of the 9 Best Restaurant Management Software",
+      "source": "G2 Learn Hub",
+      "harvested_at": "2026-10-31 04:11:16"
+    },
+    {
+      "angle": "Customer Data Ownership",
+      "headline": "WHO ACTUALLY OWNS YOUR DINERS' PHONE NUMBERS?",
+      "subtext": "Market reality: 'Relational fairness by design: rebalancing roles in Korea’s public food-delivery platforms'. Own 100% of your diner CRM database.",
+      "receipt_math": {
+        "customer_retention": "100% Direct"
+      },
+      "cta": "Own Your Customer Database",
+      "origin_headline": "Relational fairness by design: rebalancing roles in Korea’s public food-delivery platforms",
+      "source": "Frontiers",
+      "harvested_at": "2026-10-31 04:11:19"
+    },
+    {
+      "angle": "Customer Data Ownership",
+      "headline": "WHO ACTUALLY OWNS YOUR DINERS' PHONE NUMBERS?",
+      "subtext": "Market reality: 'Second Circuit blocks NYC food delivery app data-sharing law'. Own 100% of your diner CRM database.",
+      "receipt_math": {
+        "customer_retention": "100% Direct"
+      },
+      "cta": "Own Your Customer Database",
+      "origin_headline": "Second Circuit blocks NYC food delivery app data-sharing law",
+      "source": "Courthouse News",
+      "harvested_at": "2026-10-31 04:11:19"
+    },
+    {
+      "angle": "Customer Data Ownership",
+      "headline": "WHO ACTUALLY OWNS YOUR DINERS' PHONE NUMBERS?",
+      "subtext": "Market reality: 'Rapido's Ownly Taps Magicpin's 80,000+ Restaurants for Food Delivery'. Own 100% of your diner CRM database.",
+      "receipt_math": {
+        "customer_retention": "100% Direct"
+      },
+      "cta": "Own Your Customer Database",
+      "origin_headline": "Rapido's Ownly Taps Magicpin's 80,000+ Restaurants for Food Delivery",
+      "source": "MediaNama",
+      "harvested_at": "2026-10-31 04:11:19"
+    }
+  ]
+}

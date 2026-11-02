@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 1080px;
+    height: 1350px;
+    background: radial-gradient(circle at 50% 0%, rgba(255, 122, 0, 0.15) 0%, rgba(11, 15, 25, 1) 75%), #0B0F19;
+    color: #F8FAFC;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    position: relative;
+    overflow: hidden;
+    padding: 60px 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 122, 0, 0.15);
+    border: 1px solid rgba(255, 122, 0, 0.4);
+    color: #FF7A00;
+    font-size: 16px;
+    font-weight: 800;
+    padding: 8px 24px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  .main-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 56px;
+    font-weight: 900;
+    color: #FFFFFF;
+    text-transform: uppercase;
+    letter-spacing: -1px;
+    line-height: 1.1;
+  }
+
+  .main-title span {
+    color: #FF7A00;
+  }
+
+  .sub-title {
+    font-size: 22px;
+    color: #94A3B8;
+    margin-top: 10px;
+  }
+
+  /* Comparison Grid */
+  .comparison-grid {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin: 30px 0;
+  }
+
+  .card-them {
+    background: rgba(239, 68, 68, 0.04);
+    border: 1.5px solid rgba(239, 68, 68, 0.3);
+    border-radius: 28px;
+    padding: 36px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .card-us {
+    background: linear-gradient(180deg, rgba(255, 122, 0, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%);
+    border: 2px solid #FF7A00;
+    border-radius: 28px;
+    padding: 36px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    box-shadow: 0 0 50px rgba(255, 122, 0, 0.15);
+  }
+
+  .card-header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 20px;
+    margin-bottom: 24px;
+  }
+
+  .tag-them {
+    font-size: 15px;
+    font-weight: 800;
+    color: #EF4444;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .tag-us {
+    font-size: 15px;
+    font-weight: 800;
+    color: #10B981;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .card-name-them {
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: #E2E8F0;
+  }
+
+  .card-name-us {
+    font-family: 'Outfit', sans-serif;
+    font-size: 32px;
+    font-weight: 900;
+    color: #FFFFFF;
+  }
+
+  .points-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .point-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    font-size: 18px;
+    line-height: 1.35;
+  }
+
+  .icon-cross {
+    width: 28px;
+    height: 28px;
+    background: rgba(239, 68, 68, 0.2);
+    color: #EF4444;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .icon-check {
+    width: 28px;
+    height: 28px;
+    background: #10B981;
+    color: #0B0F19;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 16px;
+    flex-shrink: 0;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.5);
+  }
+
+  .price-box-them {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .price-box-us {
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .price-label {
+    font-size: 14px;
+    color: #94A3B8;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+
+  .price-them {
+    font-family: 'Outfit', sans-serif;
+    font-size: 40px;
+    font-weight: 900;
+    color: #EF4444;
+  }
+
+  .price-us {
+    font-family: 'Outfit', sans-serif;
+    font-size: 44px;
+    font-weight: 900;
+    color: #FF7A00;
+    text-shadow: 0 0 20px rgba(255, 122, 0, 0.4);
+  }
+
+  /* Bottom Bar */
+  .bottom-bar {
+    position: relative;
+    z-index: 2;
+    background: #FF7A00;
+    border-radius: 20px;
+    padding: 22px 36px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 15px 35px rgba(255, 122, 0, 0.35);
+  }
+
+  .cta-title {
+    color: #0B0F19;
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .cta-sub {
+    color: #1E293B;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .cta-btn {
+    background: #0B0F19;
+    color: #FFFFFF;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    padding: 12px 28px;
+    border-radius: 12px;
+  }
+</style>
+</head>
+<body>
+  <div class="grid-bg"></div>
+
+  <!-- Header -->
+  <div class="header">
+    <div class="brand-pill"><img src="{{logo_img}}" style="height:22px;margin-right:8px;vertical-align:middle;" alt="Logo" />CAFE QR 2.0 • THE HONEST F&amp;B BREAKDOWN</div>
+    <h1 class="main-title">{{headline}}</h1>
+    <p class="sub-title">{{subtext}}</p>
+  </div>
+
+  <!-- Comparison Grid -->
+  <div class="comparison-grid">
+    <!-- Old Incumbent Way -->
+    <div class="card-them">
+      <div>
+        <div class="card-header">
+          <div class="tag-them">THE OLD MONOPOLY TRAP</div>
+          <div class="card-name-them">Petpooja / POSist</div>
+        </div>
+        <div class="points-list">
+          <div class="point-item">
+            <div class="icon-cross">✕</div>
+            <div><strong>₹15,000 Upfront:</strong> Pay heavy fees before printing your 1st bill.</div>
+          </div>
+          <div class="point-item">
+            <div class="icon-cross">✕</div>
+            <div><strong>₹3,000+ Yearly:</strong> Forced annual license renewals every year.</div>
+          </div>
+          <div class="point-item">
+            <div class="icon-cross">✕</div>
+            <div><strong>Slow 1990s UI:</strong> Cluttered screens that freeze on Friday nights.</div>
+          </div>
+          <div class="point-item">
+            <div class="icon-cross">✕</div>
+            <div><strong>No Free Standees:</strong> Pay extra for QR cards and hardware setup.</div>
+          </div>
+        </div>
+      </div>
+      <div class="price-box-them">
+        <div class="price-label">Upfront Investment</div>
+        <div class="price-them">₹15,000+</div>
+      </div>
+    </div>
+
+    <!-- Cafe QR 2.0 Modern Way -->
+    <div class="card-us">
+      <div>
+        <div class="card-header">
+          <div class="tag-us">THE CAFE QR 2.0 WAY</div>
+          <div class="card-name-us">Cafe QR Sachet Model</div>
+        </div>
+        <div class="points-list">
+          <div class="point-item">
+            <div class="icon-check">✓</div>
+            <div><strong>₹99/Month Sachet:</strong> Pay as you grow. Zero upfront extortion.</div>
+          </div>
+          <div class="point-item">
+            <div class="icon-check">✓</div>
+            <div><strong>0.8-Sec Thermal KOT:</strong> High-speed printing + dynamic UPI on receipt.</div>
+          </div>
+          <div class="point-item">
+            <div class="icon-check">✓</div>
+            <div><strong>0% Commission:</strong> Direct table & delivery orders. Keep 100%.</div>
+          </div>
+          <div class="point-item">
+            <div class="icon-check">✓</div>
+            <div><strong>Free Acrylic Standees:</strong> Delivered to your restaurant doorstep.</div>
+          </div>
+        </div>
+      </div>
+      <div class="price-box-us">
+        <div class="price-label">Starting Price</div>
+        <div class="price-us">₹99/Month</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom CTA -->
+  <div class="bottom-bar">
+    <div>
+      <div class="cta-title">FREE 7-DAY TRIAL • ZERO COMMITMENT</div>
+      <div class="cta-sub">Custom Menu Digitization + Standees Included Free</div>
+    </div>
+    <div class="cta-btn">COMMENT 'DEMO' &rarr;</div>
+  </div>
+</body>
+</html>

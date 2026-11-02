@@ -1,0 +1,65 @@
+{
+  "system_version": "2.0.0",
+  "frameworks": {
+    "hormozi_value_equation": {
+      "dream_outcome": "Zero commission leakages, 35% faster table turnover, 100% customer data ownership",
+      "perceived_likelihood": "Sub-second 0.8s ESC/POS thermal printing demo + dynamic UPI QR on receipt",
+      "time_delay": "Instant onboarding, menu digitized in under 2 hours",
+      "effort_and_sacrifice": "Zero app downloads for diners, works with existing cafe printers"
+    },
+    "schwartz_awareness_stages": [
+      {
+        "stage": "PROBLEM_AWARE",
+        "description": "Owner knows delivery commissions and POS bills are painful, but thinks everyone pays it.",
+        "hook_strategy": "Expose the annual math shock.",
+        "sample_hook": "On a ₹500 bill, you lose ₹140 to Swiggy. That is ₹1.8 Lakhs lost every year."
+      },
+      {
+        "stage": "PROBLEM_AGITATED",
+        "description": "Owner is angry about recent platform fee hikes or ₹15,000 upfront POS license renewal notices.",
+        "hook_strategy": "Frame aggregators as extortionist monopolies.",
+        "sample_hook": "Swiggy hiked platform fees again. Customers complain, but you lose 28% of every single bill."
+      },
+      {
+        "stage": "SOLUTION_AWARE",
+        "description": "Owner knows QR ordering exists, but fears internet drops or waiters making mistakes.",
+        "hook_strategy": "Highlight sub-second speed & offline sync durability.",
+        "sample_hook": "Diner sits ➔ Scans table QR ➔ Thermal KOT spits in kitchen in 0.8 seconds flat."
+      },
+      {
+        "stage": "PRODUCT_AWARE",
+        "description": "Owner is evaluating Petpooja vs DotPe vs Cafe QR.",
+        "hook_strategy": "Sachet pricing disruption.",
+        "sample_hook": "Why lock ₹15,000 upfront in Petpooja? Cafe QR is ₹99/month sachet pricing."
+      },
+      {
+        "stage": "MOST_AWARE",
+        "description": "Ready to buy, needs zero-risk guarantee.",
+        "hook_strategy": "Grand slam risk reversal.",
+        "sample_hook": "Free 7-Day All-Access Trial + Free Custom Acrylic Standees delivered to your counter."
+      }
+    ],
+    "viral_hook_archetypes": [
+      {
+        "type": "MATH_SHOCK",
+        "pattern": "Why a ₹[Amount] order costs you ₹[Loss] in hidden aggregator fees.",
+        "example": "Why a ₹500 food bill leaves you with only ₹360 after aggregator commissions."
+      },
+      {
+        "type": "DIRTY_SECRET",
+        "pattern": "The [Number] dirty tricks food delivery apps use to hide your diners' phone numbers.",
+        "example": "3 dirty tricks aggregators use to keep your customer database secret from you."
+      },
+      {
+        "type": "HARDWARE_FLEX",
+        "pattern": "What happens when [Number] tables order at once? [Old Way] collapses. Cafe QR fires in 0.8s.",
+        "example": "What happens when 40 tables order at once? Paper KOTs burn. Cafe QR prints in 0.8s."
+      },
+      {
+        "type": "SACHET_PRICE_DESTRUCTION",
+        "pattern": "Stop paying ₹[High_Amount] upfront for POS software. Cafe QR is ₹99/mo.",
+        "example": "Stop paying ₹15,000 upfront for legacy POS software. Cafe QR is ₹99/month."
+      }
+    ]
+  }
+}

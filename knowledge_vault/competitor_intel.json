@@ -1,0 +1,50 @@
+{
+  "competitors": [
+    {
+      "name": "Petpooja",
+      "model": "Upfront Legacy POS Monopoly",
+      "pricing_trap": "₹15,000+ upfront license fee + ₹3,000 yearly renewal fee",
+      "weaknesses": [
+        "Heavy capital outlay before printing first bill",
+        "Cluttered 1990s desktop interface",
+        "Slow hardware lock-in",
+        "Charges extra for QR code standees and loyalty add-ons"
+      ],
+      "cafe_qr_wedge": "₹99/Month Sachet Micro-Pricing with zero upfront lock-in and free acrylic standee kit."
+    },
+    {
+      "name": "Swiggy & Zomato",
+      "model": "Third-Party Aggregator Duopoly",
+      "pricing_trap": "25% to 30% top-line commission on every food order + customer platform fee hikes",
+      "weaknesses": [
+        "Aggregators own 100% of the customer phone numbers and data",
+        "Advertises competitor restaurants on the merchant's listing",
+        "Delayed weekly payouts hurting cafe cash flow",
+        "Customer fee hikes make dine-in food seem overpriced"
+      ],
+      "cafe_qr_wedge": "0% Commission Direct Online Delivery & Table QR. You keep 100% of the bill and own the diner database."
+    },
+    {
+      "name": "DotPe",
+      "model": "Enterprise QR Ecosystem",
+      "pricing_trap": "Transaction percentage cuts (1-2%) + complex multi-outlet enterprise setup",
+      "weaknesses": [
+        "Too bloated and slow for small standalone cafes and bakeries",
+        "Requires complex dashboard configuration",
+        "Slow thermal receipt print speed on local kitchen printers"
+      ],
+      "cafe_qr_wedge": "0.8-second ultra-lightweight ESC/POS thermal printing with dynamic UPI on receipt."
+    },
+    {
+      "name": "POSist / Restroworks",
+      "model": "High-End Fine Dine Enterprise POS",
+      "pricing_trap": "Expensive enterprise SaaS ($50+/month) with strict multi-chain contracts",
+      "weaknesses": [
+        "Completely unaffordable for standalone cafes, food trucks, and chai stalls",
+        "Steep learning curve requiring staff training"
+      ],
+      "cafe_qr_wedge": "Zero-training touch billing board and mobile-first self ordering."
+    }
+  ],
+  "last_verified": "2026-10-31 04:11:19"
+}
