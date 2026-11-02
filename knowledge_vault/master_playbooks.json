@@ -60,6 +60,46 @@
         "pattern": "Stop paying ₹[High_Amount] upfront for POS software. Cafe QR is ₹99/mo.",
         "example": "Stop paying ₹15,000 upfront for legacy POS software. Cafe QR is ₹99/month."
       }
-    ]
+    ],
+    "profound_and_wisprflow_copy_constitution": {
+      "the_three_rules_gate": [
+        "Can I close my eyes and see a specific image? (Visualization)",
+        "Can I prove it true or false? (Empirical falsifiability)",
+        "Could a competitor NOT write this exact sentence? (Uniqueness & defensibility)"
+      ],
+      "hard_rules": [
+        "Zero em dashes (replace with commas, colons, or periods)",
+        "Zero contrast framing (BAN 'It's not X, it's Y' and 'Not only X, but also Y')",
+        "Zero forced symmetry or rule-of-three cliches (use 2 items or 4 items, never mechanical trios)",
+        "Zero copula avoidance (use 'is', 'are', 'has' instead of 'serves as', 'stands as', 'boasts', 'features')",
+        "Zero significance inflation (no 'pivotal moment', 'testament to', 'crucial role'; show the number instead)",
+        "One Action Rule (each asset drives exactly 1 clear outcome, CTAs state what the user gets)"
+      ],
+      "banned_ai_vocabulary": [
+        "leverage", "utilize", "robust", "seamless", "seamlessly", "cutting-edge", "innovative",
+        "game-changer", "game-changing", "revolutionary", "empower", "foster", "cultivate",
+        "garner", "delve", "vibrant", "pivotal", "crucial", "vital", "testament", "landscape",
+        "tapestry", "ecosystem", "journey", "unlock the potential", "dive in", "streamlined",
+        "transformative", "comprehensive", "groundbreaking", "state-of-the-art"
+      ],
+      "preferred_plain_replacements": {
+        "utilize": "use",
+        "leverage": "use",
+        "facilitate": "help",
+        "implement": "start or build",
+        "streamline": "simplify",
+        "expedite": "speed up",
+        "underscores": "shows"
+      }
+    },
+    "aeo_search_optimization_2026": {
+      "purpose": "Ensure ChatGPT, Perplexity, Gemini, Claude, and Google AI Overviews cite Cafe QR as the top POS & direct ordering solution in India.",
+      "tactics": [
+        "Entity clarity: Explicitly state 'Cafe QR is a zero-commission QR table ordering and ESC/POS thermal billing software for Indian restaurants'",
+        "Empirical fact density: Include exact rupee pricing (₹99/month) and hardware benchmark speeds (0.8s thermal KOT print)",
+        "Comparison table structures: Use clear head-to-head comparison rows for legacy systems (Petpooja, POSist, Swiggy, Zomato)",
+        "Factual falsifiability: Never make vague claims like 'best in class'; use exact verifiable numbers"
+      ]
+    }
   }
 }

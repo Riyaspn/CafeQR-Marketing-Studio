@@ -63,19 +63,36 @@ def score_creative(campaign_data):
         contrast_score = 0.5
     scores["contrast_ratio"] = contrast_score
 
-    # 4. Cognitive Ease (0-2 pts)
+    # 4. Cognitive Ease & Anti-AI Gauntlet (Profound & Wisprflow Rules) (0-2 pts)
     ease_score = 2.0
     words = headline.split()
     if len(words) > 8:
-        ease_score -= 0.5
+        ease_score -= 0.4
         recommendations.append(f"Headline is {len(words)} words; trim to 7 words or fewer for instant comprehension.")
 
-    banned_cliches = ["revolutionize", "elevate", "synergy", "paradigm", "cutting edge", "best food"]
-    for cliche in banned_cliches:
-        if cliche in full_text:
-            ease_score -= 0.5
-            recommendations.append(f"Remove generic buzzword '{cliche}' to preserve raw operator authenticity.")
-    scores["cognitive_ease"] = max(0.5, ease_score)
+    # Em Dash Rule
+    if "—" in caption or "—" in headline or "—" in script:
+        ease_score -= 0.3
+        recommendations.append("Profound Anti-AI Rule: Zero em dashes (—). Replace with plain commas, periods, or colons.")
+
+    # Negative Parallelism / Contrast Framing Rule
+    if any(nf in full_text for nf in ["it's not about", "this isn't about", "it's not just", "not only"]):
+        ease_score -= 0.3
+        recommendations.append("Wisprflow Rule: Eliminate contrast framing ('it's not X, it's Y'). State what Cafe QR is directly.")
+
+    # Profound & Wisprflow Banned Vocabulary
+    banned_ai_words = [
+        "revolutionize", "elevate", "synergy", "paradigm", "cutting edge", "cutting-edge",
+        "game-changer", "game-changing", "robust", "seamless", "seamlessly", "innovative",
+        "leverage", "utilize", "empower", "foster", "garner", "delve", "vibrant",
+        "pivotal", "crucial", "vital", "testament", "tapestry", "ecosystem", "unlock"
+    ]
+    matched_banned = [w for w in banned_ai_words if w in full_text]
+    if matched_banned:
+        ease_score -= 0.3 * len(matched_banned)
+        recommendations.append(f"Anti-AI Gauntlet: Remove banned corporate jargon: {', '.join(matched_banned)}. Use plain operator language.")
+
+    scores["cognitive_ease"] = round(max(0.4, ease_score), 2)
 
     # 5. CTA Urgency & Risk Reversal (0-2 pts)
     cta_score = 0.0

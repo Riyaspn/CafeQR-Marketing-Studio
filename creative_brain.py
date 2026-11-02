@@ -96,7 +96,7 @@ def build_deterministic_creative(topic_item):
             ],
             "us_label": "Cafe QR Direct Ordering",
             "us_points": [
-                "0% commission — keep 100% of your bill value",
+                "0% commission: keep 100% of your bill value",
                 "You own 100% of your diner customer database",
                 "Instant UPI settlement directly to your bank",
                 "Direct QR on tables & direct WhatsApp ordering link"
@@ -258,10 +258,17 @@ NEWS HEADLINE TO TREND-JACK:
 "{topic_item.get('title')}"
 Source: {topic_item.get('source')}
 
+Follow the Profound & Wisprflow Conversion Copywriting Constitution:
+1. Zero em dashes (never use '—'; use commas, colons, or periods).
+2. Zero banned AI vocabulary (never use leverage, seamless, cutting-edge, robust, game-changer, innovate, empower, foster, delve, pivotal, crucial, vital, tapestry).
+3. Zero contrast framing (never use 'It is not X, it is Y' or 'Not only X, but also Y'). State positive factual claims directly.
+4. The Three Rules Gate: Every line must have concrete imagery, provable rupee figures, and claims a legacy competitor cannot make.
+5. One Action Rule: End with a single clear CTA telling the merchant what they get.
+
 Create a high-impact viral social media campaign response in strict JSON:
 {{
   "headline": "Bold punchy headline in ALL CAPS, max 7 words",
-  "subtext": "Sharp 1-line sub-hook highlighting the merchant pain point",
+  "subtext": "Sharp 1-line sub-hook highlighting the merchant pain point with exact numbers",
   "badge": "Short badge tag (e.g. 🚨 F&B PROFIT ALERT or ⚡ HARDWARE FLEX)",
   "template": "news_alert OR us_vs_them OR feature_spotlight",
   "script": "A 15-20 second conversational voiceover script for Instagram Reels. Highly engaging, direct, no fluff, ends with 'Comment DEMO for your free trial'.",
