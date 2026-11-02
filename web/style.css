@@ -759,3 +759,146 @@ body {
   border-left-color: #FF7A00;
 }
 
+/* AI Sound Radar Widget */
+.sound-radar-card {
+  background: rgba(21, 28, 44, 0.7);
+  border: 1px solid rgba(255, 122, 0, 0.3);
+  border-radius: 12px;
+  overflow: hidden;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+}
+
+.sound-radar-header {
+  padding: 10px 14px;
+  background: rgba(255, 122, 0, 0.08);
+  border-bottom: 1px solid rgba(255, 122, 0, 0.15);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sound-radar-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text-main);
+}
+
+.sound-mood-pill {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: rgba(255, 122, 0, 0.2);
+  color: #FF9933;
+  border: 1px solid rgba(255, 122, 0, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sound-radar-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sound-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.sound-tag-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sound-track-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.sound-track-sub {
+  font-size: 11px;
+  color: #10B981;
+  font-weight: 600;
+}
+
+.sound-ig-recommendation {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  max-width: 55%;
+}
+
+.ig-icon {
+  color: #FF7A00;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.ig-track-name {
+  color: #CBD5E1;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.btn-copy-sound {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px 4px;
+  font-size: 12px;
+  transition: transform 0.15s;
+}
+
+.btn-copy-sound:hover {
+  transform: scale(1.2);
+}
+
+.sound-slider-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.sound-slider-row label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.sound-slider-row label span {
+  color: #FF7A00;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.sound-slider-row input[type="range"] {
+  flex: 1;
+  accent-color: #FF7A00;
+  cursor: pointer;
+}
+

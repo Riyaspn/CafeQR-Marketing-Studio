@@ -119,6 +119,45 @@ function populateEditor(campaign) {
   if (campaign.evaluation) {
     updateRubricUI(campaign.evaluation);
   }
+
+  // Populate AI Sound Radar
+  if (campaign.audio_profile) {
+    const ap = campaign.audio_profile;
+    const moodPill = document.getElementById('soundMoodPill');
+    if (moodPill) moodPill.innerText = ap.situation ? `🎵 ${ap.situation.replace(/_/g, ' ')}` : '🎵 Dynamic Audio';
+    const trackTitle = document.getElementById('soundTrackTitle');
+    if (trackTitle) trackTitle.innerText = ap.title || 'Dynamic Commercial Beat';
+    const trackGenre = document.getElementById('soundTrackGenre');
+    if (trackGenre) trackGenre.innerText = ap.genre || 'CC0 Royalty-Free Audio';
+    const igTrack = document.getElementById('soundIgTrack');
+    if (igTrack) igTrack.innerText = ap.trending_ig_tip || 'Trending Beat';
+    const slider = document.getElementById('bgmVolumeSlider');
+    const valText = document.getElementById('bgmVolumeVal');
+    const vol = ap.bgm_volume !== undefined ? Math.round(ap.bgm_volume * 100) : 18;
+    if (slider) slider.value = vol;
+    if (valText) valText.innerText = `${vol}%`;
+  }
+}
+
+function updateBgmVolume(val) {
+  const valText = document.getElementById('bgmVolumeVal');
+  if (valText) valText.innerText = `${val}%`;
+  if (currentCampaign) {
+    if (!currentCampaign.audio_profile) currentCampaign.audio_profile = {};
+    currentCampaign.audio_profile.bgm_volume = parseFloat(val) / 100.0;
+  }
+}
+
+function copyTrendingSound() {
+  const igTrack = document.getElementById('soundIgTrack');
+  if (igTrack && igTrack.innerText) {
+    navigator.clipboard.writeText(igTrack.innerText);
+    const btn = document.querySelector('.btn-copy-sound');
+    if (btn) {
+      btn.innerText = '✅';
+      setTimeout(() => { btn.innerText = '📋'; }, 1500);
+    }
+  }
 }
 
 // 6. Display Previews

@@ -3,6 +3,26 @@ import json
 import re
 from config import BRAND_NAME, BRAND_URL, WHATSAPP_DEMO_LINK, GEMINI_API_KEY
 from knowledge_vault.evaluator import score_creative
+import music_fetcher
+
+def classify_audio_situation(category, headline=""):
+    """
+    Classifies campaign situation into one of 4 emotional archetypes:
+    BREAKING_TENSION, TECH_SPEED_FLEX, PRICE_DISRUPTION, CAFE_AMBIANCE.
+    """
+    cat = (category or "").upper()
+    hl = (headline or "").lower()
+
+    if "15,000" in hl or "petpooja" in hl or "sachet" in hl or "lock-in" in hl:
+        return "PRICE_DISRUPTION"
+    elif "0.8" in hl or "speed" in hl or "hardware" in hl or "thermal" in hl or "peak" in hl:
+        return "TECH_SPEED_FLEX"
+    elif cat == "AGGREGATOR_EXPLOITATION" or "fee" in hl or "swiggy" in hl or "zomato" in hl or "gst" in hl or "commission" in hl:
+        return "BREAKING_TENSION"
+    elif cat == "RESTAURANT_GROWTH" or "dine" in hl or "customer" in hl or "cafe" in hl or "phone" in hl:
+        return "CAFE_AMBIANCE"
+    else:
+        return "BREAKING_TENSION"
 
 def build_deterministic_creative(topic_item):
     """
@@ -153,6 +173,16 @@ def build_deterministic_creative(topic_item):
             "#restaurantmanagement #cafeoperations #smartdining #cafeqr #tableturnover #indianfoodtech #qrsolutions #smartpos"
         )
 
+    situation = classify_audio_situation(category, headline)
+    audio_info = music_fetcher.get_audio_info(situation)
+    audio_profile = {
+        "situation": situation,
+        "title": audio_info["title"],
+        "genre": audio_info["genre"],
+        "trending_ig_tip": audio_info["trending_ig_tip"],
+        "bgm_volume": 0.18
+    }
+
     return {
         "headline": headline,
         "subtext": subtext,
@@ -163,7 +193,8 @@ def build_deterministic_creative(topic_item):
         "comparison": comparison,
         "script": script,
         "caption": caption,
-        "cta": "Reply DEMO for Free 7-Day Trial"
+        "cta": "Reply DEMO for Free 7-Day Trial",
+        "audio_profile": audio_profile
     }
 
 def generate_creative_campaign(topic_item):
@@ -212,6 +243,7 @@ Return ONLY valid JSON.
             data["source_tag"] = topic_item.get("source", "Industry News")
             data["news_title"] = topic_item.get("title", "")
             data["evaluation"] = score_creative(data)
+            data["audio_profile"] = fallback["audio_profile"]
             return data
         except Exception:
             pass

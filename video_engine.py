@@ -8,6 +8,7 @@ import imageio_ffmpeg
 import edge_tts
 from playwright.sync_api import sync_playwright
 from config import BASE_DIR, DRAFTS_DIR, ASSETS_DIR
+import music_fetcher
 
 def _get_b64_asset(filename, mime="image/png"):
     p = ASSETS_DIR / filename
@@ -321,23 +322,51 @@ def render_reel_video(creative_data, voice_key="prabhat", filename=None):
 
     render_reel_frame(styled_head, subtext, badge, step, frame_path)
 
-    # Step 3: FFmpeg Video Encoding with pan-zoom kinetic motion
+    # Step 3: FFmpeg Video Encoding with Smart Audio Mixing
     ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
 
-    cmd = [
-        ffmpeg_exe,
-        "-y",
-        "-loop", "1",
-        "-i", str(frame_path),
-        "-i", str(mp3_path),
-        "-c:v", "libx264",
-        "-tune", "stillimage",
-        "-c:a", "aac",
-        "-b:a", "192k",
-        "-pix_fmt", "yuv420p",
-        "-shortest",
-        str(output_mp4)
-    ]
+    # Dynamic Background Music Fetching & Smart Ducking
+    audio_profile = creative_data.get("audio_profile", {})
+    situation = audio_profile.get("situation", "BREAKING_TENSION")
+    bgm_volume = float(audio_profile.get("bgm_volume", 0.18))
+    bgm_path = music_fetcher.get_track_for_situation(situation)
+
+    if bgm_path and os.path.exists(bgm_path) and bgm_volume > 0.001:
+        print(f"🎵 Mixing background music: {os.path.basename(bgm_path)} at volume {bgm_volume}")
+        cmd = [
+            ffmpeg_exe,
+            "-y",
+            "-loop", "1",
+            "-i", str(frame_path),
+            "-i", str(mp3_path),
+            "-stream_loop", "-1",
+            "-i", str(bgm_path),
+            "-filter_complex", f"[1:a]volume=1.0[v];[2:a]volume={bgm_volume}[m];[v][m]amix=inputs=2:duration=first:dropout_transition=2[a]",
+            "-map", "0:v",
+            "-map", "[a]",
+            "-c:v", "libx264",
+            "-tune", "stillimage",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-pix_fmt", "yuv420p",
+            "-shortest",
+            str(output_mp4)
+        ]
+    else:
+        cmd = [
+            ffmpeg_exe,
+            "-y",
+            "-loop", "1",
+            "-i", str(frame_path),
+            "-i", str(mp3_path),
+            "-c:v", "libx264",
+            "-tune", "stillimage",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-pix_fmt", "yuv420p",
+            "-shortest",
+            str(output_mp4)
+        ]
 
     subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 

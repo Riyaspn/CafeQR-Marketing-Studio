@@ -198,6 +198,33 @@
             </div>
           </div>
 
+          <!-- AI Sound Radar & Dynamic BGM Controls -->
+          <div class="sound-radar-card" id="soundRadarCard">
+            <div class="sound-radar-header">
+              <div class="sound-radar-title">
+                <span>🎵</span> AI Sound Radar &amp; BGM
+              </div>
+              <span class="sound-mood-pill" id="soundMoodPill">🚨 Breaking Tension</span>
+            </div>
+            <div class="sound-radar-body">
+              <div class="sound-info-row">
+                <div class="sound-tag-desc">
+                  <div class="sound-track-name" id="soundTrackTitle">Dark Pulse &amp; Dramatic Tension</div>
+                  <div class="sound-track-sub" id="soundTrackGenre">Dynamic CC0 Commercial Track</div>
+                </div>
+                <div class="sound-ig-recommendation" id="soundIgRecommendation" title="Trending audio to use on Instagram">
+                  <span class="ig-icon">📱 IG Tip:</span>
+                  <span class="ig-track-name" id="soundIgTrack">Else — Paris</span>
+                  <button type="button" class="btn-copy-sound" onclick="copyTrendingSound()" title="Copy trending audio name">📋</button>
+                </div>
+              </div>
+              <div class="sound-slider-row">
+                <label for="bgmVolumeSlider">BGM Volume: <span id="bgmVolumeVal">18%</span></label>
+                <input type="range" id="bgmVolumeSlider" min="0" max="40" value="18" step="2" oninput="updateBgmVolume(this.value)">
+              </div>
+            </div>
+          </div>
+
           <div class="form-group">
             <label>Reel Voiceover Script (15–20 Seconds)</label>
             <textarea id="editScript" rows="3" placeholder="Voiceover spoken by neural AI in the video reel..."></textarea>

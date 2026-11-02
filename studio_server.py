@@ -22,6 +22,7 @@ import creative_brain
 import poster_engine
 import video_engine
 import meta_publisher
+import music_fetcher
 from knowledge_vault.evaluator import score_creative
 
 PORT = int(os.environ.get("PORT", 8899))
@@ -68,11 +69,19 @@ class StudioHandler(SimpleHTTPRequestHandler):
             self._send_json({"success": True, "drafts": sorted(draft_files, key=lambda x: x["name"], reverse=True)})
             return
 
-        # 4. Serve Draft Files (Posters & MP4 Reels)
+        # 3b. API: Audio Info for Situation
+        elif path == "/api/audio-info":
+            qs = parse_qs(parsed.query)
+            situation = qs.get("situation", ["BREAKING_TENSION"])[0]
+            info = music_fetcher.get_audio_info(situation)
+            self._send_json({"success": True, "info": info})
+            return
+
+        # 4. Serve Draft Files (Posters, MP4 Reels, & Audio Tracks)
         elif path.startswith("/drafts/"):
-            filename = os.path.basename(path)
-            file_path = DRAFTS_DIR / filename
-            if file_path.exists():
+            subpath = path[len("/drafts/"):].lstrip("/")
+            file_path = DRAFTS_DIR / subpath
+            if file_path.exists() and file_path.is_file():
                 self._serve_file(file_path)
             else:
                 self.send_error(404, "Draft file not found")
