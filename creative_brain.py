@@ -129,49 +129,62 @@ def build_deterministic_creative(topic_item):
         )
 
     elif category == "POS_AND_HARDWARE":
-        headline = "STOP PAYING ₹15,000 UPFRONT FOR POS"
-        subtext = "Why lock your cash into bloated 1990s legacy software?"
-        badge = "⚡ HARDWARE & SPEED FLEX"
+        headline = "POS RENEWAL UNDER ₹1,000/YEAR"
+        subtext = "Year 1 is ₹2,498. Year 2 & beyond is just ₹999/year. Pay only for what you need."
+        badge = "💸 TRANSPARENT PRICING"
         poster_template = "us_vs_them"
 
         comparison = {
-            "title": "LEGACY POS VS CAFE QR 2.0",
-            "them_label": "Petpooja / POSist Monopolies",
+            "title": "LEGACY POS VS CAFE QR",
+            "them_label": "Petpooja / Legacy POS",
             "them_points": [
-                "₹15,000+ upfront license fee",
-                "₹3,000 to ₹5,000 annual renewal trap",
-                "Cluttered desktop screens built in 2005",
-                "Crashes when internet drops on Friday nights"
+                "₹15,000+ heavy upfront license fee",
+                "₹3,000 to ₹5,000 renewals that never go down",
+                "Pay for bloated features you never use",
+                "Cluttered desktop screens built in 2005"
             ],
-            "us_label": "Cafe QR 2.0 Sachet Model",
+            "us_label": "Cafe QR Base Plan",
             "us_points": [
-                "₹99/month micro-sachet pricing",
-                "No lock-in, cancel anytime freedom",
-                "Lightning fast mobile & tablet billing",
-                "0.8-second thermal KOT + offline sync"
+                "Year 1: ₹2,498 (₹999 sub + ₹1,499 setup)",
+                "Year 2 & Beyond: Just ₹999/year renewal",
+                "Base: Billing, QR, Menus, Delivery sync",
+                "Bolt on only what you use: KOT ₹499, Udhaar ₹499"
             ]
         }
 
         script = (
-            "Are you really still paying 15,000 rupees upfront for POS software? "
-            "And then another 3,000 rupees every year just to keep it running? "
-            "That era is officially over. "
-            "Cafe QR gives you sub-second thermal printing, digital table QR ordering, "
-            "and live cloud analytics for just 99 rupees a month. "
-            "Save 15,000 rupees today. Send us a message for your free 7-day trial."
+            "What if your restaurant billing software renewal was under 1,000 rupees a year? "
+            "Most POS companies trap you with 15,000 rupees upfront and high annual fees that never go down. "
+            "At Cafe QR, we do things differently with our pay-only-for-what-you-need model. "
+            "Your Year 1 Base Plan is 2,498 rupees, including full onboarding. "
+            "And from Year 2 onwards? Just 999 rupees a year. "
+            "Stop overpaying for bloated features you do not use. Comment DEMO for a quick 2-minute video."
         )
 
         caption = (
-            "💸 STOP FALLING FOR THE ₹15,000 POS SOFTWARE TRAP.\n\n"
-            "Why do legacy POS providers demand ₹15,000 upfront before you even print your first bill?\n\n"
-            "Because they know once you pay, you're locked into ₹3,000+ yearly renewals forever.\n\n"
-            "We built Cafe QR 2.0 to end this:\n"
-            "🔥 ₹99/Month Sachet Micro-Pricing\n"
-            "🔥 0.8-Second ESC/POS Thermal Printing (USB, Bluetooth, WiFi)\n"
-            "🔥 Dynamic UPI QR right on the receipt\n"
-            "🔥 Works seamlessly even with slow internet\n\n"
-            f"👉 Claim your free 7-day trial standee kit: {WHATSAPP_DEMO_LINK}\n\n"
-            "#posmachine #restaurantbilling #petpooja #cafeqr #thermalprinter #billingsoftware #restauranttech #keralafoodies #chennaicafe #mumbaifoodie"
+            "💸 WHAT IF YOUR BILLING SOFTWARE RENEWAL WAS UNDER ₹1,000/YEAR? 🤯\n\n"
+            "Most POS companies trap you with ₹15,000 upfront fees and annual renewals that never go down. "
+            "At Cafe QR, an LLP registered tech platform, we do things differently with our 'Pay-Only-For-What-You-Need' model.\n\n"
+            "Here is our transparent pricing for the Core Base Plan:\n"
+            "🚀 Year 1: ₹2,498 (Includes ₹999 Annual Subscription + ₹1,499 One-Time Setup & Onboarding Fee)\n"
+            "📉 Year 2 & Beyond: Just ₹999/year (You never pay the setup fee again)\n\n"
+            "What is included in the Base Plan?\n"
+            "✅ Advanced Billing\n"
+            "✅ Table QR Ordering\n"
+            "✅ Rich Digital Menus\n"
+            "✅ Quick-Commerce Delivery Integration\n\n"
+            "Need more? Just bolt on what you use:\n"
+            "🍳 Kitchen Order Ticket (KOT): ₹499/year\n"
+            "📒 Credit Ledger (Udhaar) Tabs: ₹499/year\n"
+            "🤝 Customer CRM & Loyalty: ₹999/year\n"
+            "📦 Inventory, Purchase & Stock ERP: ₹1,999/year\n"
+            "🏷️ Barcode Scanning & Label Printing: ₹999/year\n\n"
+            "Stop overpaying for features you do not use and secure an unbeatable renewal rate for your business.\n\n"
+            f"👉 Reply 'DEMO' or message us for a quick 2-minute video: {WHATSAPP_DEMO_LINK}\n\n"
+            "📱 Get Cafe QR on Google Play: https://play.google.com/store/apps/details?id=com.cafeqr.app&hl=en_IN\n"
+            "🌐 Web: https://cafeqr.in\n"
+            "📸 Instagram: https://www.instagram.com/cafe_qr_\n\n"
+            "#possoftware #restaurantbilling #cafeqr #billingsoftware #restauranttech #petpooja #indianrestaurants #cloudkitchen"
         )
 
     else:
@@ -247,12 +260,16 @@ def generate_creative_campaign(topic_item):
             model = genai.GenerativeModel("gemini-1.5-flash")
             
             prompt = f"""
-You are an expert restaurant marketing director and growth hacker for Cafe QR (https://cafeqr.in).
-Cafe QR is an ultra-modern Indian restaurant tech solution:
-- 0% Commission Direct Online Ordering (Swiggy/Zomato charge 25-30%)
-- ₹99/month Sachet Pricing (Petpooja charges ₹15,000 upfront + ₹3,000 renewals)
-- Sub-second (0.8s) ESC/POS Thermal Printing with Dynamic UPI QR on bills
-- Table QR self-ordering that turns tables 35% faster
+You are an expert restaurant marketing director and growth hacker for Cafe QR (LLP registered Indian tech platform, https://cafeqr.in).
+Cafe QR authentic product specs & pricing:
+- Core Base Plan: Year 1 is ₹2,498 (₹999 Annual Subscription + ₹1,499 One-Time Setup & Onboarding).
+- Year 2 & Beyond Renewal: Just ₹999/year! (Billing software renewal under ₹1,000/year forever; setup fee is never paid again).
+- Base Plan includes: Advanced Billing, Table QR Ordering, Digital Menus, & Quick-Commerce Delivery Integration!
+- Modular bolt-on add-ons: KOT Kitchen Order Tickets (₹499/yr), Credit Ledger Udhaar Tabs (₹499/yr), Customer CRM & Loyalty (₹999/yr), Inventory & Stock ERP (₹1,999/yr), Barcode Scanning & Label Printing (₹999/yr).
+- Direct delivery: 0% Commission direct table ordering (Swiggy/Zomato charge 25-30%).
+- Hardware speed: 0.8s ESC/POS thermal printing with dynamic UPI QR on receipts.
+- Competitor contrast: Petpooja traps merchants with ₹15,000+ upfront and ₹3,000 to ₹5,000 annual renewals that never go down.
+- Official links: Play Store: https://play.google.com/store/apps/details?id=com.cafeqr.app&hl=en_IN | Web: https://cafeqr.in | Instagram: https://www.instagram.com/cafe_qr_
 
 NEWS HEADLINE TO TREND-JACK:
 "{topic_item.get('title')}"

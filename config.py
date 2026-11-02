@@ -33,11 +33,22 @@ INSTAGRAM_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID", "")
 # Google Gemini API Key (Optional free tier key; engine includes deterministic fallback)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
-# Cafe QR Brand Positioning
-BRAND_NAME = "Cafe QR 2.0"
+# Cafe QR Brand Positioning & Official Channels
+BRAND_NAME = "Cafe QR POS"
 BRAND_URL = "https://cafeqr.in"
+PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.cafeqr.app&hl=en_IN"
+INSTAGRAM_URL = "https://www.instagram.com/cafe_qr_?igsh=MTd5azRiNmM4bDU0aw%3D%3D&utm_source=qr"
 WHATSAPP_DEMO_PHONE = os.getenv("WHATSAPP_DEMO_PHONE", "919400000000")
 WHATSAPP_DEMO_LINK = f"https://wa.me/{WHATSAPP_DEMO_PHONE}?text=Hi%20Cafe%20QR,%20I%20want%20a%20free%20live%20demo%20for%20my%20restaurant."
+
+# Official Transparent "Pay-Only-For-What-You-Need" Pricing (in ₹)
+PRICING_BASE_YEAR_1 = 2498        # ₹999 Annual Sub + ₹1,499 Setup & Onboarding
+PRICING_BASE_RENEWAL = 999        # Under ₹1,000/yr renewal (₹999/year forever)
+PRICING_BOLT_ON_KOT = 499         # Kitchen Order Ticket (KOT): ₹499/year
+PRICING_BOLT_ON_UDHAAR = 499      # Credit Ledger (Udhaar) Tabs: ₹499/year
+PRICING_BOLT_ON_CRM = 999         # Customer CRM & Loyalty: ₹999/year
+PRICING_BOLT_ON_INVENTORY = 1999  # Inventory, Purchase & Stock ERP: ₹1,999/year
+PRICING_BOLT_ON_BARCODE = 999     # Barcode Scanning & Label Printing: ₹999/year
 
 # Brand Design Tokens
 COLOR_PRIMARY = "#FF7A00"      # Hospitality Orange

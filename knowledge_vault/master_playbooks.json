@@ -29,8 +29,8 @@
       {
         "stage": "PRODUCT_AWARE",
         "description": "Owner is evaluating Petpooja vs DotPe vs Cafe QR.",
-        "hook_strategy": "Sachet pricing disruption.",
-        "sample_hook": "Why lock ₹15,000 upfront in Petpooja? Cafe QR is ₹99/month sachet pricing."
+        "hook_strategy": "Transparent Pay-Only-For-What-You-Need model.",
+        "sample_hook": "What if your billing software renewal was under ₹1,000/year? Year 1 is ₹2,498, Year 2 & beyond is just ₹999/year."
       },
       {
         "stage": "MOST_AWARE",
@@ -56,9 +56,9 @@
         "example": "What happens when 40 tables order at once? Paper KOTs burn. Cafe QR prints in 0.8s."
       },
       {
-        "type": "SACHET_PRICE_DESTRUCTION",
-        "pattern": "Stop paying ₹[High_Amount] upfront for POS software. Cafe QR is ₹99/mo.",
-        "example": "Stop paying ₹15,000 upfront for legacy POS software. Cafe QR is ₹99/month."
+        "type": "UNBEATABLE_RENEWAL_SHOCK",
+        "pattern": "Stop paying ₹[High_Amount] upfront for POS. Cafe QR Base Plan renewal is under ₹1,000/year (₹999/yr forever).",
+        "example": "What if your billing software renewal was under ₹1,000/year? Stop overpaying for bloated POS features."
       }
     ],
     "profound_and_wisprflow_copy_constitution": {

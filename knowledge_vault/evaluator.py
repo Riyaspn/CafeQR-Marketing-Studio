@@ -38,7 +38,10 @@ def score_creative(campaign_data):
     math_score = 0.0
     has_rupee = "₹" in full_text or "rupee" in full_text
     has_numbers = bool(re.search(r'\d+', headline + " " + subtext))
-    has_comparison = ("28%" in full_text or "25%" in full_text) and ("0%" in full_text or "100%" in full_text or "99" in full_text)
+    has_comparison = (
+        ("28%" in full_text or "25%" in full_text or "15,000" in full_text or "15000" in full_text) and 
+        ("0%" in full_text or "100%" in full_text or "999" in full_text or "2,498" in full_text or "2498" in full_text or "1,000" in full_text)
+    )
 
     if has_rupee and has_numbers and has_comparison:
         math_score = 2.0
@@ -46,13 +49,13 @@ def score_creative(campaign_data):
         math_score = 1.4
     else:
         math_score = 0.6
-        recommendations.append("Add empirical rupee-for-rupee math (e.g., ₹500 bill vs ₹140 loss).")
+        recommendations.append("Add empirical rupee-for-rupee math (e.g., Year 1 ₹2,498, Year 2+ ₹999/yr vs ₹15,000 legacy trap).")
     scores["empirical_proof"] = math_score
 
     # 3. Contrast Ratio (Villain vs Hero) (0-2 pts)
     contrast_score = 0.0
     has_villain = any(v in full_text for v in ["aggregator", "swiggy", "zomato", "petpooja", "monopoly", "trap", "lock-in", "paper kot"])
-    has_hero = any(h in full_text for h in ["cafe qr", "direct", "0%", "sachet", "thermal", "keep 100%"])
+    has_hero = any(h in full_text for h in ["cafe qr", "direct", "0%", "sachet", "thermal", "keep 100%", "999", "2,498", "base plan", "pay-only"])
 
     if has_villain and has_hero:
         contrast_score = 2.0
