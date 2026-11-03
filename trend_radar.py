@@ -394,6 +394,14 @@ Return ONLY valid JSON matching this schema:
                 item["deep_intel"] = deep_extract_intel(item)
         return fallback_list
 
+def fetch_trending_topics(limit=15):
+    """
+    Autonomous Pipeline Interface:
+    Fetches multi-vertical real-time news across all 26 streams and applies AI ranking + deep intelligence.
+    """
+    raw_news = fetch_trending_f_and_b_news(limit_per_topic=2)
+    return rank_and_filter_trends(raw_news, top_n=limit)
+
 if __name__ == "__main__":
     news = fetch_trending_f_and_b_news(limit_per_topic=2)
     print(f"✅ Fetched {len(news)} multi-vertical trend stories across 10 categories.")
