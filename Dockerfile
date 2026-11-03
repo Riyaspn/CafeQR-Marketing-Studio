@@ -51,11 +51,10 @@ WORKDIR /app
 
 # Copy requirements and install python packages
 COPY requirements.txt /app/
-RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Install Playwright Chromium headless browser only (lightweight, ~150MB)
-RUN playwright install --with-deps chromium
+RUN playwright install chromium
 
 # Copy application source code
 COPY . /app/

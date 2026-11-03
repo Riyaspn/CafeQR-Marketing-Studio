@@ -321,7 +321,32 @@ class StudioHandler(SimpleHTTPRequestHandler):
                         "error": "Instagram Story requires a public HTTPS URL."
                     })
 
-            self._send_json({"success": True, "results": results})
+            # Auto-purge published image/video from disk & database upon successful posting
+            any_success = any(r.get("success") for r in results)
+            if any_success:
+                try:
+                    if image_path and os.path.exists(image_path):
+                        os.remove(image_path)
+                        print(f"🗑️ [AutoPurge] Deleted published poster from disk: {image_path}")
+                    if video_path and os.path.exists(video_path):
+                        os.remove(video_path)
+                        print(f"🗑️ [AutoPurge] Deleted published video from disk: {video_path}")
+
+                    # Prune from saved_drafts.json
+                    saved_file = DRAFTS_DIR / "saved_drafts.json"
+                    if saved_file.exists():
+                        try:
+                            with open(saved_file, "r", encoding="utf-8") as f:
+                                saved = json.load(f)
+                            saved = [d for d in saved if d.get("poster_path") != image_path]
+                            with open(saved_file, "w", encoding="utf-8") as f:
+                                json.dump(saved, f, indent=2)
+                        except Exception:
+                            pass
+                except Exception as e:
+                    print(f"⚠️ [AutoPurge] Error cleaning up published files: {e}")
+
+            self._send_json({"success": True, "results": results, "cleaned_up": any_success})
             return
 
         # 4b. API: Test Telegram Alert Bot
@@ -330,13 +355,46 @@ class StudioHandler(SimpleHTTPRequestHandler):
             self._send_json(res)
             return
 
-        # 4c. API: Trigger Autonomous Cron Cycle On-Demand
+        # 4c. API: Trigger Autonomous Cron Cycle On-Demand (Asynchronous for Fast 200 OK)
         elif path == "/api/trigger-cron":
-            try:
-                res = autonomous_cron.run_autonomous_poster_cycle()
-                self._send_json({"success": True, "cycle_result": res})
-            except Exception as e:
-                self._send_json({"success": False, "error": str(e)})
+            # Fire cycle in background daemon thread so external cron pings never time out
+            def run_worker():
+                try:
+                    autonomous_cron.run_autonomous_poster_cycle()
+                except Exception as e:
+                    print(f"⚠️ [TriggerCron] Background cycle error: {e}")
+
+            t = threading.Thread(target=run_worker, daemon=True)
+            t.start()
+            self._send_json({
+                "success": True,
+                "message": "Autonomous generation cycle triggered in background. Telegram alert will arrive upon completion."
+            })
+            return
+
+        # 4d. API: Manual Delete / Discard Draft
+        elif path == "/api/delete-draft":
+            target_path = body.get("poster_path") or body.get("poster_file")
+            target_url = body.get("poster_url", "")
+            if target_path and os.path.exists(target_path):
+                try:
+                    os.remove(target_path)
+                    print(f"🗑️ [ManualDelete] Removed draft from disk: {target_path}")
+                except Exception as e:
+                    print(f"⚠️ [ManualDelete] Error removing file: {e}")
+
+            saved_file = DRAFTS_DIR / "saved_drafts.json"
+            if saved_file.exists():
+                try:
+                    with open(saved_file, "r", encoding="utf-8") as f:
+                        saved = json.load(f)
+                    saved = [d for d in saved if d.get("poster_path") != target_path and (not target_url or d.get("poster_url") != target_url)]
+                    with open(saved_file, "w", encoding="utf-8") as f:
+                        json.dump(saved, f, indent=2)
+                except Exception:
+                    pass
+
+            self._send_json({"success": True, "message": "Draft purged from disk and database."})
             return
 
         # 5. API: Update Token Settings

@@ -443,6 +443,9 @@ async function publishApprovedCampaign() {
           msg += `❌ ${r.platform}: ${r.error || 'Failed'}\n`;
         }
       });
+      if (data.cleaned_up) {
+        msg += `🗑️ Image automatically purged from cloud storage.\n`;
+      }
       feedback.className = `publish-feedback ${allSuccess ? 'success' : 'error'}`;
       feedback.innerText = msg;
     }
@@ -504,7 +507,8 @@ async function loadDraftsGallery() {
           <div style="font-size: 11px; color: #94A3B8;">🕒 Generated: ${date}</div>
           <div style="display: flex; gap: 8px; margin-top: auto;">
             <button class="btn btn-primary btn-sm" onclick="loadSpecificCampaign(${idx})" style="flex: 1; padding: 6px; font-size: 12px;">⚡ Load &amp; Approve</button>
-            <a href="${posterSrc}" download="${camp.headline || 'poster'}.png" class="btn btn-secondary btn-sm" style="padding: 6px 10px;">⬇️</a>
+            <a href="${posterSrc}" download="${camp.headline || 'poster'}.png" class="btn btn-secondary btn-sm" style="padding: 6px 10px;" title="Download PNG">⬇️</a>
+            <button class="btn btn-secondary btn-sm" onclick="deleteDraftFromCloud(${idx})" style="padding: 6px 10px; color: #EF4444;" title="Purge from cloud">🗑️</button>
           </div>
         `;
         grid.appendChild(card);
@@ -526,6 +530,29 @@ function loadSpecificCampaign(idx) {
     displayPreviews(camp);
     switchPreviewTab('poster');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+}
+
+async function deleteDraftFromCloud(idx) {
+  if (!window.cachedSavedCampaigns || !window.cachedSavedCampaigns[idx]) return;
+  const camp = window.cachedSavedCampaigns[idx];
+  if (!confirm(`Permanently delete "${camp.headline || 'this draft'}" from cloud storage?`)) return;
+
+  try {
+    const res = await fetch('/api/delete-draft', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        poster_path: camp.poster_path,
+        poster_url: camp.poster_url
+      })
+    });
+    const data = await res.json();
+    if (data.success) {
+      loadDraftsGallery();
+    }
+  } catch (e) {
+    alert(`Failed to delete draft: ${e.message}`);
   }
 }
 
