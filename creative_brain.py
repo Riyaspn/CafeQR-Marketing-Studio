@@ -1,316 +1,246 @@
 import os
 import json
 import re
-from config import BRAND_NAME, BRAND_URL, WHATSAPP_DEMO_LINK, GEMINI_API_KEY
+import requests
+from config import (
+    BRAND_NAME, BRAND_URL, WHATSAPP_DEMO_LINK,
+    NVIDIA_API_KEY, NVIDIA_BASE_URL, MODEL_PRIMARY, MODEL_FALLBACK,
+    GEMINI_API_KEY
+)
 from knowledge_vault.evaluator import score_creative
-import music_fetcher
 
-def analyze_audio_situation(category, headline="", news_title=""):
+def call_nvidia_nim(messages, model=None, temperature=0.3, max_tokens=1000, timeout=30):
     """
-    Intelligent AI Sound Director: Analyzes the unique situation of each campaign
-    and generates tailored audio keywords for dynamic online search.
+    High-resilience client for NVIDIA NIM API with automated fallback.
+    Tries MODEL_PRIMARY first, then falls back to MODEL_FALLBACK.
     """
-    cat = (category or "").upper()
-    text = f"{category} {headline} {news_title}".lower()
+    api_key = NVIDIA_API_KEY
+    if not api_key:
+        raise ValueError("NVIDIA_API_KEY is not configured in .env")
 
-    if any(k in text for k in ["15,000", "petpooja", "sachet", "renewal", "lock-in", "license", "pricing", "annual fee"]):
-        return {
-            "situation": "PRICE_DISRUPTION",
-            "situation_label": "💸 Bold Sachet Disruption",
-            "search_query": "electronic bass rhythm future bass",
-            "title": "Future Bass & Punchy Disruptor",
-            "genre": "Bold Disruption / Sachet Fight",
-            "trending_ig_tip": "AP Dhillon — Dil Nu Instrumental (Punchy bass beat)",
-            "bgm_volume": 0.18
-        }
-    elif any(k in text for k in ["0.8", "speed", "hardware", "thermal", "kot", "kitchen", "printer", "sub-second", "rush", "peak"]):
-        return {
-            "situation": "TECH_SPEED_FLEX",
-            "situation_label": "⚡ High-Velocity Hardware Pulse",
-            "search_query": "techno synthesizer electronic beat",
-            "title": "Kinetic Electronic Tempo",
-            "genre": "High Velocity / Hardware Flex",
-            "trending_ig_tip": "Interworld — Metamorphosis (High-energy speed flex)",
-            "bgm_volume": 0.18
-        }
-    elif any(k in text for k in ["swiggy", "zomato", "fee", "commission", "aggregator", "exploitation", "protest", "gst", "hike", "monopoly"]):
-        return {
-            "situation": "BREAKING_TENSION",
-            "situation_label": "🚨 Breaking Controversy Tension",
-            "search_query": "ambient synthesizer dramatic ambient",
-            "title": "Dramatic Tension & News Expose",
-            "genre": "Suspense / High Stakes",
-            "trending_ig_tip": "Else — Paris (Popular for exposés & fee hike reactions)",
-            "bgm_volume": 0.18
-        }
-    elif any(k in text for k in ["dine", "table", "cafe", "ambiance", "coffee", "customer", "loyalty", "breakfast", "monsoon", "dessert"]):
-        return {
-            "situation": "CAFE_AMBIANCE",
-            "situation_label": "☕ Warm Cafe Acoustic Lounge",
-            "search_query": "acoustic piano lounge chill guitar",
-            "title": "Warm Acoustic & Chill Cafe Lounge",
-            "genre": "Acoustic / Customer Experience",
-            "trending_ig_tip": "Lofi Fruits Music — Coffee & Chill (Smooth coffeehouse vibe)",
-            "bgm_volume": 0.18
-        }
-    else:
-        # Custom topic fallback: Derive dynamic keywords directly from the headline
-        clean_words = [w for w in re.findall(r'\b[a-zA-Z]{4,}\b', text) if w not in ["with", "from", "that", "this", "have", "your"]]
-        custom_kw = " ".join(clean_words[:3]) if clean_words else "ambient electronic synthesizer"
-        return {
-            "situation": "CUSTOM_SITUATION",
-            "situation_label": f"🎵 Custom Situation ({' '.join(clean_words[:2]).title() or 'Dynamic'})",
-            "search_query": f"{custom_kw} synthesizer",
-            "title": "Custom Dynamic Online Beat",
-            "genre": "Dynamic AI Live Match",
-            "trending_ig_tip": "Trending Commercial Sound (Matched for topic)",
-            "bgm_volume": 0.18
-        }
-
-def classify_audio_situation(category, headline=""):
-    return analyze_audio_situation(category, headline)["situation"]
-
-def build_deterministic_creative(topic_item):
-    """
-    Guaranteed, high-converting copy generator based on Alex Hormozi Grand Slam Offer
-    and Indian restaurant merchant anti-monopoly positioning. Zero API dependency.
-    """
-    category = topic_item.get("category", "AGGREGATOR_EXPLOITATION")
-    raw_title = topic_item.get("title", "Food Delivery Platform Fee Hikes")
-    source = topic_item.get("source", "Industry Report")
-
-    if category == "AGGREGATOR_EXPLOITATION":
-        headline = "SWIGGY & ZOMATO HIKE FEES AGAIN"
-        subtext = "Customers pay ₹10 extra. You lose 28% per bill. Who really wins?"
-        badge = "🚨 F&B PROFIT ALERT"
-        poster_template = "agency_editorial"
-        
-        comparison = {
-            "title": "THE REAL RESTAURANT MATH",
-            "them_label": "Third-Party Aggregators",
-            "them_points": [
-                "25% to 30% commission on every single order",
-                "Aggregator owns your customer phone numbers",
-                "Delayed weekly or bi-weekly payouts",
-                "Customer sees 50 competitor cafes right above you"
-            ],
-            "us_label": "Cafe QR Direct Ordering",
-            "us_points": [
-                "0% commission: keep 100% of your bill value",
-                "You own 100% of your diner customer database",
-                "Instant UPI settlement directly to your bank",
-                "Direct QR on tables & direct WhatsApp ordering link"
-            ]
-        }
-        
-        script = (
-            "Diners think a 10 rupee platform fee is expensive? "
-            "They have no idea that the restaurant behind the food is giving away 28 percent of the entire bill. "
-            "On a 500 rupee order, 140 rupees goes straight to tech monopolies. "
-            "Stop bleeding your hard-earned restaurant margins. "
-            "Switch to Cafe QR: zero percent commission, direct table ordering, and instant thermal KOT. "
-            "Click the link in our bio to get your free demo."
-        )
-
-        caption = (
-            "🚨 THE DIRTY SECRET OF FOOD DELIVERY FEES IN INDIA:\n\n"
-            f"Headlines: \"{raw_title}\"\n\n"
-            "Every time platform fees go up, customers get angry. But restaurant owners suffer twice as much:\n\n"
-            "❌ 25% to 30% commissions siphoned from every order\n"
-            "❌ Zero access to your own customer phone numbers\n"
-            "❌ Aggregators advertising your competitors on your listing\n\n"
-            "💡 THE CAFE QR REVOLUTION:\n"
-            "✅ 0% Commission Direct Online Delivery\n"
-            "✅ Sub-second Table QR Ordering & instant UPI\n"
-            "✅ You own 100% of your diner database\n"
-            "✅ Sub-second thermal KOT prints directly in kitchen\n\n"
-            f"👉 Comment 'DEMO' or tap here for instant setup: {WHATSAPP_DEMO_LINK}\n\n"
-            "#restauranttech #cafebusiness #indianrestaurant #possoftware #swiggycommission #zomatocommission #cafeqr #kochicuisine #bangalorefoodies #restaurantmanagement #cloudkitchen"
-        )
-
-    elif category == "POS_AND_HARDWARE":
-        headline = "POS RENEWAL UNDER ₹1,000/YEAR"
-        subtext = "Year 1 is ₹2,498. Year 2 & beyond is just ₹999/year. Pay only for what you need."
-        badge = "💸 TRANSPARENT PRICING"
-        poster_template = "us_vs_them"
-
-        comparison = {
-            "title": "LEGACY POS VS CAFE QR",
-            "them_label": "Petpooja / Legacy POS",
-            "them_points": [
-                "₹15,000+ heavy upfront license fee",
-                "₹3,000 to ₹5,000 renewals that never go down",
-                "Pay for bloated features you never use",
-                "Cluttered desktop screens built in 2005"
-            ],
-            "us_label": "Cafe QR Base Plan",
-            "us_points": [
-                "Year 1: ₹2,498 (₹999 sub + ₹1,499 setup)",
-                "Year 2 & Beyond: Just ₹999/year renewal",
-                "Base: Billing, QR, Menus, Delivery sync",
-                "Bolt on only what you use: KOT ₹499, Udhaar ₹499"
-            ]
-        }
-
-        script = (
-            "What if your restaurant billing software renewal was under 1,000 rupees a year? "
-            "Most POS companies trap you with 15,000 rupees upfront and high annual fees that never go down. "
-            "At Cafe QR, we do things differently with our pay-only-for-what-you-need model. "
-            "Your Year 1 Base Plan is 2,498 rupees, including full onboarding. "
-            "And from Year 2 onwards? Just 999 rupees a year. "
-            "Stop overpaying for bloated features you do not use. Comment DEMO for a quick 2-minute video."
-        )
-
-        caption = (
-            "💸 WHAT IF YOUR BILLING SOFTWARE RENEWAL WAS UNDER ₹1,000/YEAR? 🤯\n\n"
-            "Most POS companies trap you with ₹15,000 upfront fees and annual renewals that never go down. "
-            "At Cafe QR, an LLP registered tech platform, we do things differently with our 'Pay-Only-For-What-You-Need' model.\n\n"
-            "Here is our transparent pricing for the Core Base Plan:\n"
-            "🚀 Year 1: ₹2,498 (Includes ₹999 Annual Subscription + ₹1,499 One-Time Setup & Onboarding Fee)\n"
-            "📉 Year 2 & Beyond: Just ₹999/year (You never pay the setup fee again)\n\n"
-            "What is included in the Base Plan?\n"
-            "✅ Advanced Billing\n"
-            "✅ Table QR Ordering\n"
-            "✅ Rich Digital Menus\n"
-            "✅ Quick-Commerce Delivery Integration\n\n"
-            "Need more? Just bolt on what you use:\n"
-            "🍳 Kitchen Order Ticket (KOT): ₹499/year\n"
-            "📒 Credit Ledger (Udhaar) Tabs: ₹499/year\n"
-            "🤝 Customer CRM & Loyalty: ₹999/year\n"
-            "📦 Inventory, Purchase & Stock ERP: ₹1,999/year\n"
-            "🏷️ Barcode Scanning & Label Printing: ₹999/year\n"
-            "👥 HR & Staff Payroll: ₹1,999/year\n\n"
-            "Stop overpaying for features you do not use and secure an unbeatable renewal rate for your business.\n\n"
-            f"👉 Reply 'DEMO' or message us for a quick 2-minute video: {WHATSAPP_DEMO_LINK}\n\n"
-            "📱 Get Cafe QR on Google Play: https://play.google.com/store/apps/details?id=com.cafeqr.app&hl=en_IN\n"
-            "🌐 Web: https://cafeqr.in\n"
-            "📸 Instagram: https://www.instagram.com/cafe_qr_\n\n"
-            "#possoftware #restaurantbilling #cafeqr #billingsoftware #restauranttech #petpooja #indianrestaurants #cloudkitchen"
-        )
-
-    else:
-        headline = "LOST BILLS & SLOW KOTS KILLING PEAK HOURS?"
-        subtext = "How 40 tables order seamlessly without waiter delays."
-        badge = "🚀 OPERATION EFFICIENCY"
-        poster_template = "feature_spotlight"
-
-        comparison = {
-            "title": "PEAK RUSH SURVIVAL",
-            "them_label": "Paper KOT & Waiter Dependency",
-            "them_points": [
-                "Waiters rushing between tables taking wrong orders",
-                "Diners waving hands for 15 minutes to ask for the bill",
-                "Paper tokens lost in kitchen smoke",
-                "Billing bottleneck at the cash counter"
-            ],
-            "us_label": "Cafe QR Smart Table Flow",
-            "us_points": [
-                "Diner sits, scans acrylic QR, browses rich photo menu",
-                "Order fires straight to kitchen printer in 0.8s",
-                "Diner pays via instant dynamic UPI on receipt",
-                "Table turnover increases by 35%"
-            ]
-        }
-
-        script = (
-            "What happens to your cafe during a Friday dinner rush? "
-            "Tables waving their hands. Waiters taking wrong orders. Paper tokens getting lost. "
-            "Here is the modern way: The diner scans the acrylic QR on their table. "
-            "The kitchen thermal printer fires a KOT in 0.8 seconds. "
-            "And they pay with dynamic UPI without waiting for a waiter. "
-            "Turn tables 35 percent faster with Cafe QR. Reply DEMO for your free trial."
-        )
-
-        caption = (
-            "⏱️ YOUR TABLES ARE WAITING 15 MINUTES JUST TO ORDER. HERE'S THE FIX.\n\n"
-            "During peak rush, every wasted minute costs you a table turnover.\n\n"
-            "With Cafe QR 2.0:\n"
-            "1️⃣ Diner scans table QR on their phone (No app download needed)\n"
-            "2️⃣ Rich visual menu with food photos loads in 0.5s\n"
-            "3️⃣ Order prints instantly in the kitchen on high-speed thermal paper\n"
-            "4️⃣ Dynamic UPI QR printed on the bill for 1-tap checkout\n\n"
-            f"👉 See it live in action: {WHATSAPP_DEMO_LINK}\n\n"
-            "#restaurantmanagement #cafeoperations #smartdining #cafeqr #tableturnover #indianfoodtech #qrsolutions #smartpos"
-        )
-
-    audio_profile = analyze_audio_situation(category, headline, raw_title)
-
-    return {
-        "headline": headline,
-        "subtext": subtext,
-        "badge": badge,
-        "source_tag": source,
-        "news_title": raw_title,
-        "template": poster_template,
-        "comparison": comparison,
-        "script": script,
-        "caption": caption,
-        "cta": "Reply DEMO for Free 7-Day Trial",
-        "audio_profile": audio_profile
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
     }
+    url = f"{NVIDIA_BASE_URL.rstrip('/')}/chat/completions"
+
+    models_to_try = [model or MODEL_PRIMARY]
+    if MODEL_FALLBACK not in models_to_try:
+        models_to_try.append(MODEL_FALLBACK)
+
+    last_error = None
+    for m in models_to_try:
+        payload = {
+            "model": m,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens
+        }
+        try:
+            r = requests.post(url, headers=headers, json=payload, timeout=timeout)
+            if r.status_code == 200:
+                raw_text = r.json()["choices"][0]["message"]["content"]
+                return raw_text
+            else:
+                last_error = f"Model {m} returned status {r.status_code}: {r.text[:120]}"
+        except Exception as e:
+            last_error = f"Model {m} exception: {str(e)[:120]}"
+
+    raise RuntimeError(f"All NVIDIA NIM models failed. Last error: {last_error}")
+
+def clean_json_response(raw_text):
+    """
+    Strips markdown code blocks and whitespace to cleanly parse JSON from LLM output.
+    """
+    text = raw_text.strip()
+    text = re.sub(r'^```json\s*', '', text, flags=re.MULTILINE)
+    text = re.sub(r'^```\s*', '', text, flags=re.MULTILINE)
+    text = re.sub(r'\s*```$', '', text, flags=re.MULTILINE)
+    return json.loads(text.strip())
+
+def analyze_audio_situation(category, headline="", script=""):
+    """
+    Dynamic AI Sound Director: Uses NVIDIA NIM LLM to analyze the emotional
+    and acoustic situation of each campaign, generating tailored Pixabay search
+    queries, BPM targets, and timed foley sound cues. Zero hardcoded if/else branches.
+    """
+    prompt = f"""
+Analyze the marketing reel script and headline below. Act as an award-winning Sound Director for social media video ads:
+Headline: "{headline}"
+Reel Script: "{script}"
+Category: "{category}"
+
+Determine the optimal acoustic profile, background music genre, and foley sound effect cue points.
+Return ONLY valid JSON matching this schema:
+{{
+  "situation": "PRICE_DISRUPTION | TECH_SPEED_FLEX | BREAKING_TENSION | CAFE_AMBIANCE | PEAK_RUSH_FIGHT",
+  "situation_label": "Short bold label with emoji (e.g. ⚡ Kinetic Hardware Pulse)",
+  "search_query": "3-4 concise keywords for Pixabay music search (e.g. 'electronic bass beat', 'ambient dramatic synth', 'chill acoustic guitar')",
+  "title": "Descriptive title for track mood",
+  "genre": "Genre description",
+  "trending_ig_tip": "Recommended trending Instagram audio style or commercial song recommendation",
+  "bgm_volume": 0.18,
+  "foley_cues": [
+    {{"time_sec": 4.5, "sound": "printer_cut", "description": "Rapid thermal printer receipt ejection chhhk"}},
+    {{"time_sec": 12.0, "sound": "upi_chime", "description": "Google Pay instant payment received chime"}}
+  ]
+}}
+"""
+    try:
+        messages = [
+            {"role": "system", "content": "You are a professional film and commercial ad Sound Director. Output strictly valid JSON."},
+            {"role": "user", "content": prompt}
+        ]
+        raw = call_nvidia_nim(messages, temperature=0.2, max_tokens=400, timeout=20)
+        profile = clean_json_response(raw)
+        return profile
+    except Exception as e:
+        # Dynamic fallback if API connection flickers
+        clean_words = [w for w in re.findall(r'\b[a-zA-Z]{4,}\b', f"{headline} {script}".lower()) if w not in ["with", "from", "that", "this", "have", "your"]]
+        kw = " ".join(clean_words[:3]) if clean_words else "ambient electronic synth"
+        return {
+            "situation": "DYNAMIC_MATCH",
+            "situation_label": "🎵 Dynamic Acoustic Match",
+            "search_query": f"{kw} electronic beat",
+            "title": "Tailored Kinetic Beat",
+            "genre": "Dynamic Electronic / Modern",
+            "trending_ig_tip": "Trending Commercial Reel Audio (Fast Paced)",
+            "bgm_volume": 0.18,
+            "foley_cues": [
+                {"time_sec": 4.0, "sound": "printer_cut", "description": "Thermal printer receipt cut"},
+                {"time_sec": 14.0, "sound": "upi_chime", "description": "UPI payment chime"}
+            ]
+        }
 
 def generate_creative_campaign(topic_item):
     """
-    Attempts to generate AI-crafted viral copy using Google Gemini free tier.
-    Gracefully falls back to deterministic Hormozi-grade copy if key is unavailable.
+    Autonomous Multi-Stage Agentic Creative Brain:
+    1. Strategic Synthesis & Awareness Stage Assignment (Eugene Schwartz).
+    2. Creative Drafting adhering to the 4 Legendary Ad Masters (Hormozi, Ogilvy, Schwartz, Williams).
+    3. Autonomous Reflection & Self-Critique Loop (Auditing with score_creative and self-correcting up to 3 passes).
+    4. Dynamic AI Sound Direction.
     """
-    if GEMINI_API_KEY:
-        try:
-            import google.generativeai as genai
-            genai.configure(api_key=GEMINI_API_KEY)
-            model = genai.GenerativeModel("gemini-1.5-flash")
-            
-            prompt = f"""
-You are an expert restaurant marketing director and growth hacker for Cafe QR (LLP registered Indian tech platform, https://cafeqr.in).
-Cafe QR authentic product specs & pricing:
+    title = topic_item.get("title", "Indian Restaurant Margin Squeeze")
+    source = topic_item.get("source", "Industry Intel")
+    category = topic_item.get("category", "RESTAURANT_FINANCE")
+
+    system_persona = """You are the Chief Direct-Response Marketing Director for Cafe QR (LLP registered Indian restaurant tech platform, https://cafeqr.in).
+Your task is to craft high-converting, viral direct-response social media campaigns for Indian restaurant owners, cafe founders, and cloud kitchens.
+
+CAFE QR AUTHENTIC SPECS & PRICING:
 - Core Base Plan: Year 1 is ₹2,498 (₹999 Annual Subscription + ₹1,499 One-Time Setup & Onboarding).
-- Year 2 & Beyond Renewal: Just ₹999/year! (Billing software renewal under ₹1,000/year forever; setup fee is never paid again).
+- Year 2 & Beyond Renewal: Just ₹999/year! (Renewal under ₹1,000/year forever; setup fee is never paid again).
 - Base Plan includes: Advanced Billing, Table QR Ordering, Digital Menus, & Quick-Commerce Delivery Integration!
-- Modular bolt-on add-ons: KOT Kitchen Order Tickets (₹499/yr), Credit Ledger Udhaar Tabs (₹499/yr), Customer CRM & Loyalty (₹999/yr), Inventory & Stock ERP (₹1,999/yr), Barcode Scanning & Label Printing (₹999/yr), HR & Staff Payroll (₹1,999/yr).
-- Direct delivery: 0% Commission direct table ordering (Swiggy/Zomato charge 25-30%).
+- Modular bolt-on add-ons: KOT Kitchen Order Tickets (₹499/yr), Credit Ledger Udhaar Tabs (₹499/yr), Customer CRM & Loyalty (₹999/yr), Inventory ERP (₹1,999/yr), Barcode Scanning (₹999/yr), HR & Staff Payroll (₹1,999/yr).
+- Direct delivery: 0% Commission direct table ordering (Swiggy/Zomato charge 25% to 30%).
 - Hardware speed: 0.8s ESC/POS thermal printing with dynamic UPI QR on receipts.
 - Competitor contrast: Petpooja traps merchants with ₹15,000+ upfront and ₹3,000 to ₹5,000 annual renewals that never go down.
 - Official links: Play Store: https://play.google.com/store/apps/details?id=com.cafeqr.app&hl=en_IN | Web: https://cafeqr.in | Instagram: https://www.instagram.com/cafe_qr_
 
-NEWS HEADLINE TO TREND-JACK:
-"{topic_item.get('title')}"
-Source: {topic_item.get('source')}
+THE 4 LEGENDARY AD MASTERS & ANTI-AI CONSTITUTION:
+1. Alex Hormozi ($100M Leads): Hook-Retain-Reward reel pacing. End with frictionless Grand Slam lead magnet (e.g. Reply DEMO for 2-minute unedited rush audit).
+2. David Ogilvy (Ogilvy on Advertising): Headlines must carry news or specific numbers (max 7 words, ALL CAPS, no cute puns). Caption must be informative and fact-dense. Respect the merchant; no hollow superlatives.
+3. Eugene Schwartz (Breakthrough Advertising): Channel existing restaurant margin desire into Cafe QR's Unique Mechanism (0.8s direct thermal print, dynamic UPI QR on bill, ₹999/yr renewal). Target the prospect's awareness stage.
+4. Roy H. Williams (Wizard of Ads): Appeal to the 3 Banks of the Mind using sensory details (sight: glowing neon UPI QR; sound: zipp-zipp thermal printer, Google Pay chime; feeling: kitchen rush relief). Speak in rhythmic, authentic kitchen-floor cadence.
+5. Zero em dashes (never use '—'; use plain commas, colons, or periods).
+6. Zero banned AI words (never use revolutionize, elevate, robust, seamless, cutting-edge, game-changer, innovate, empower, foster, delve, pivotal, crucial, vital, tapestry).
+7. Zero contrast framing (never use 'It is not X, it is Y' or 'Not only X, but also Y'). State positive factual claims directly.
+8. One Action Rule: Single clear CTA telling the merchant what they get.
+"""
 
-Follow the Profound & Wisprflow Conversion Copywriting Constitution:
-1. Zero em dashes (never use '—'; use commas, colons, or periods).
-2. Zero banned AI vocabulary (never use leverage, seamless, cutting-edge, robust, game-changer, innovate, empower, foster, delve, pivotal, crucial, vital, tapestry).
-3. Zero contrast framing (never use 'It is not X, it is Y' or 'Not only X, but also Y'). State positive factual claims directly.
-4. The Three Rules Gate: Every line must have concrete imagery, provable rupee figures, and claims a legacy competitor cannot make.
-5. One Action Rule: End with a single clear CTA telling the merchant what they get.
+    draft_prompt = f"""
+NEWS TOPIC TO TREND-JACK:
+"{title}"
+Source: {source}
+Category: {category}
 
-Create a high-impact viral social media campaign response in strict JSON:
+Craft a complete viral social media campaign in strict JSON format:
 {{
-  "headline": "Bold punchy headline in ALL CAPS, max 7 words",
+  "headline": "Bold punchy headline in ALL CAPS, max 7 words with news or specific rupee figures (Ogilvy 80/20 rule)",
   "subtext": "Sharp 1-line sub-hook highlighting the merchant pain point with exact numbers",
   "badge": "Short badge tag (e.g. 🚨 F&B PROFIT ALERT or ⚡ HARDWARE FLEX)",
   "template": "news_alert OR us_vs_them OR feature_spotlight",
-  "script": "A 15-20 second conversational voiceover script for Instagram Reels. Highly engaging, direct, no fluff, ends with 'Comment DEMO for your free trial'.",
-  "caption": "Full Instagram/Facebook caption with hook, bullet points, contrast, and hashtags",
-  "cta": "Reply DEMO for Free 7-Day Trial"
+  "script": "A 15-20 second conversational voiceover script for Instagram Reels. Must include Williams sensory cues (sight of glowing QR, sound of thermal printer zipp-zipp, GPay chime). Ends with 'Reply DEMO for 2-minute unedited video audit'.",
+  "caption": "Full Instagram/Facebook caption following Ogilvy's Informative Caption Law with hook, bullet points, contrast, transparent pricing, and hashtags",
+  "comparison": {{
+    "title": "Specific comparison title tailored to the news",
+    "them_label": "The specific competitor or legacy way",
+    "them_points": [
+      "Point 1 with exact rupee loss or flaw",
+      "Point 2 with data trap or lock-in",
+      "Point 3 with operational bottleneck",
+      "Point 4 with fee trap"
+    ],
+    "us_label": "Cafe QR Direct Solution",
+    "us_points": [
+      "Point 1 with 0% commission or Year 1 ₹2,498 / Year 2+ ₹999 renewal",
+      "Point 2 with 100% customer data ownership",
+      "Point 3 with 0.8s ESC/POS thermal printing",
+      "Point 4 with instant dynamic UPI settlement"
+    ]
+  }},
+  "cta": "Reply DEMO for 2-Minute Video Audit"
 }}
 Return ONLY valid JSON.
 """
-            response = model.generate_content(prompt)
-            text = response.text.strip()
-            text = re.sub(r'^```json\s*', '', text)
-            text = re.sub(r'\s*```$', '', text)
-            data = json.loads(text)
-            
-            fallback = build_deterministic_creative(topic_item)
-            data["comparison"] = fallback["comparison"]
-            data["source_tag"] = topic_item.get("source", "Industry News")
-            data["news_title"] = topic_item.get("title", "")
-            data["evaluation"] = score_creative(data)
-            data["audio_profile"] = fallback["audio_profile"]
-            return data
-        except Exception:
-            pass
 
-    camp = build_deterministic_creative(topic_item)
-    camp["evaluation"] = score_creative(camp)
-    return camp
+    messages = [
+        {"role": "system", "content": system_persona},
+        {"role": "user", "content": draft_prompt}
+    ]
+
+    # --- Autonomous Reflection & Self-Critique Loop ---
+    max_reflection_turns = 3
+    final_campaign = None
+
+    for iteration in range(1, max_reflection_turns + 1):
+        raw_output = call_nvidia_nim(messages, temperature=0.25, max_tokens=1100, timeout=35)
+        campaign_data = clean_json_response(raw_output)
+
+        # Audit against 10-Point Viral Rubric and 4 Legendary Masters
+        audit = score_creative(campaign_data)
+        campaign_data["evaluation"] = audit
+        campaign_data["source_tag"] = source
+        campaign_data["news_title"] = title
+
+        score = audit.get("score", 0.0)
+        recs = audit.get("recommendations", [])
+        masters = audit.get("legendary_masters_audit", {})
+        all_passed = all(status == "PASS" for status in masters.values())
+
+        if score >= 9.5 and all_passed:
+            campaign_data["reflection_passes"] = iteration
+            final_campaign = campaign_data
+            break
+
+        # If defects found, feed critique back to LLM for surgical correction
+        critique_msg = f"""
+CRITIQUE OF YOUR DRAFT (Score: {score}/10):
+The draft has the following issues that must be corrected immediately:
+{json.dumps(recs, indent=2)}
+Legendary Masters Status:
+{json.dumps(masters, indent=2)}
+
+Please revise the entire JSON to address every single recommendation.
+Ensure:
+- Zero em dashes (—).
+- Zero banned AI words.
+- Ogilvy headline has hard numbers or news and is 7 words or fewer.
+- Williams sensory cues (thermal printer sound, glowing UPI QR, GPay chime) are clearly audible in the script.
+- Hormozi CTA offers an unedited 2-minute video audit or trial.
+- Comparison points are detailed and tailored to this specific topic.
+
+Return ONLY the corrected valid JSON.
+"""
+        messages.append({"role": "assistant", "content": raw_output})
+        messages.append({"role": "user", "content": critique_msg})
+        final_campaign = campaign_data
+
+    # Finalize with Dynamic AI Sound Direction
+    final_campaign["audio_profile"] = analyze_audio_situation(
+        category,
+        final_campaign.get("headline", ""),
+        final_campaign.get("script", "")
+    )
+
+    return final_campaign

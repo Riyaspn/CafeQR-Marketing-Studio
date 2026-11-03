@@ -111,6 +111,30 @@ def score_creative(campaign_data):
         recommendations.append("Strengthen CTA with a zero-risk reversal (e.g. 'Free 7-Day Trial + Standees').")
     scores["cta_urgency"] = cta_score
 
+    # Legendary Ad Masters Audit (Hormozi, Ogilvy, Schwartz, Williams)
+    has_sensory = any(s in full_text for s in ["printer", "thermal", "chime", "rush", "table", "counter", "smoke", "tap", "spit", "ring", "glowing", "neon"])
+    has_ogilvy_headline = bool(re.search(r'\d+', headline)) or any(w in headline.lower() for w in ["how", "why", "what", "new", "stop", "alert"])
+    has_ogilvy_caption = len(caption) >= 80
+    has_schwartz_mechanism = any(m in full_text for m in ["0.8", "thermal", "dynamic upi", "sachet", "pay-only", "base plan", "qr"])
+    has_hormozi_magnet = any(m in full_text for m in ["demo", "audit", "calculator", "trial", "standee", "kit", "pilot"])
+
+    masters_audit = {
+        "alex_hormozi_lead_magnet": "PASS" if has_hormozi_magnet else "NEEDS_IMPROVEMENT",
+        "david_ogilvy_80_20_headline": "PASS" if has_ogilvy_headline else "NEEDS_IMPROVEMENT",
+        "david_ogilvy_caption_law": "PASS" if has_ogilvy_caption else "NEEDS_IMPROVEMENT",
+        "eugene_schwartz_mechanism": "PASS" if has_schwartz_mechanism else "NEEDS_IMPROVEMENT",
+        "roy_williams_sensory_resonance": "PASS" if has_sensory else "NEEDS_IMPROVEMENT"
+    }
+
+    if not has_sensory:
+        recommendations.append("Wizard of Ads (Roy Williams): Add sensory details (sight of neon QR, sound of thermal printer zipp-zipp, relief of peak rush).")
+    if not has_ogilvy_headline:
+        recommendations.append("Ogilvy on Advertising: Headline must carry news or specific numbers (never cute puns).")
+    if not has_schwartz_mechanism:
+        recommendations.append("Breakthrough Advertising (Eugene Schwartz): Highlight Cafe QR's Unique Mechanism (0.8s direct thermal print or ₹999/yr renewal).")
+    if not has_hormozi_magnet:
+        recommendations.append("100M Leads (Alex Hormozi): Offer a frictionless Grand Slam lead magnet (e.g. Reply DEMO for 2-min unedited video audit).")
+
     total_score = round(sum(scores.values()), 1)
     grade = "VIRAL_READY" if total_score >= 8.5 else "SOLID_ENGAGING" if total_score >= 7.0 else "NEEDS_OPTIMIZATION"
 
@@ -118,6 +142,7 @@ def score_creative(campaign_data):
         "score": min(10.0, total_score),
         "grade": grade,
         "breakdown": scores,
+        "legendary_masters_audit": masters_audit,
         "recommendations": recommendations if recommendations else ["Creative perfectly optimized against viral benchmark rules."]
     }
 

@@ -100,6 +100,49 @@
         "Comparison table structures: Use clear head-to-head comparison rows for legacy systems (Petpooja, POSist, Swiggy, Zomato)",
         "Factual falsifiability: Never make vague claims like 'best in class'; use exact verifiable numbers"
       ]
+    },
+    "legendary_ad_masters": {
+      "alex_hormozi_100m_leads": {
+        "core_four_engines": [
+          "Warm outreach to known cafe owners and personal networks",
+          "Cold outreach with 2-minute unedited kitchen audit videos via WhatsApp/IG",
+          "Free inbound content showing 0.8s thermal printing and live order flows",
+          "Paid Meta Ads targeting Indian restaurant owners and cloud kitchens"
+        ],
+        "grand_slam_lead_magnets": [
+          "Aggregator Fee Leakage Calculator (discover exact rupees lost to 28% cuts)",
+          "2-Minute Unedited Rush Audit (screen recording of 40-table rush in 0.8s)",
+          "7-Day Live Table Pilot (test 2 acrylic QR standees with zero setup cost)"
+        ],
+        "hook_retain_reward_structure": {
+          "hook_0_to_3s": "Expose shocking financial or operational metric",
+          "retain_3_to_15s": "Demonstrate visual proof of 0.8s thermal printing before diner finishes tapping",
+          "reward_15_to_30s": "Present transparent modular pricing (Year 1 ₹2,498, Year 2+ ₹999/yr) and clear One-Action ask"
+        }
+      },
+      "david_ogilvy_on_advertising": {
+        "eighty_twenty_headline_rule": "Every headline must carry news, specific rupees, or hard benchmark numbers. Never write cute or obscure puns.",
+        "mandatory_caption_law": "Twice as many people read image captions as read body copy. Every image or reel must have a self-contained 2-sentence caption.",
+        "fact_based_respect": "Treat cafe owners as intelligent financial operators. Use exact specs (0.8s ESC/POS thermal printing, dynamic UPI QR) without hollow buzzwords."
+      },
+      "eugene_schwartz_breakthrough_advertising": {
+        "five_awareness_stages": [
+          "Stage 1 Unaware: Industry shock and macroeconomic margins",
+          "Stage 2 Problem-Aware: Agitate 28% aggregator cuts or ₹15k legacy POS lock-in",
+          "Stage 3 Solution-Aware: Introduce 0.8s direct thermal printing mechanism",
+          "Stage 4 Product-Aware: Compare Cafe QR ₹999/yr renewal vs Petpooja ₹15k trap",
+          "Stage 5 Most Aware: Frictionless risk-reversal offer (Reply DEMO)"
+        ],
+        "market_sophistication_stage_4": "The Indian POS market is crowded. Stand out via the modular sachet architecture (Pay only for what you need: Base ₹999/yr, KOT ₹499, Udhaar ₹499)."
+      },
+      "roy_h_williams_wizard_of_ads": {
+        "three_banks_of_the_mind": {
+          "sight": "Glowing neon UPI QR code on receipt, steam rising from kitchen counter, 8 printed KOT slips neatly lined up",
+          "sound": "Rapid zipp-zipp of thermal printer cutting tickets, cheerful Google Pay chime confirming ₹840 received, diners chatting without waiting for waiters",
+          "feeling": "Friday night rush relief, pride of keeping 100% of bill value instead of paying 28% to tech monopolies"
+        },
+        "kitchen_floor_cadence": "Write in rhythmic, varied sentence lengths with authentic non-corporate operator language."
+      }
     }
   }
 }

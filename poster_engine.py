@@ -58,6 +58,23 @@ def render_poster(creative_data, width=1080, height=1350, filename=None):
     html_content = html_content.replace("{{badge}}", creative_data.get("badge", "🚨 F&B PROFIT ALERT"))
     html_content = html_content.replace("{{source_tag}}", creative_data.get("source_tag", "Industry News"))
     html_content = html_content.replace("{{news_title}}", creative_data.get("news_title", creative_data.get("subtext", "")))
+    html_content = html_content.replace("{{cta}}", creative_data.get("cta", "Reply DEMO for Free Trial"))
+
+    # Dynamic Comparison Substitution
+    comparison = creative_data.get("comparison", {})
+    them_label = comparison.get("them_label", "Legacy Aggregators / POS")
+    us_label = comparison.get("us_label", "Cafe QR Direct Solution")
+    
+    them_pts = comparison.get("them_points", [])
+    them_html = "".join([f'<div class="point-item"><div class="icon-cross">✕</div><div>{pt}</div></div>' for pt in them_pts])
+    
+    us_pts = comparison.get("us_points", [])
+    us_html = "".join([f'<div class="point-item"><div class="icon-check">✓</div><div>{pt}</div></div>' for pt in us_pts])
+
+    html_content = html_content.replace("{{them_label}}", them_label)
+    html_content = html_content.replace("{{us_label}}", us_label)
+    html_content = html_content.replace("{{them_points_html}}", them_html)
+    html_content = html_content.replace("{{us_points_html}}", us_html)
 
     if not filename:
         uid = uuid.uuid4().hex[:8]

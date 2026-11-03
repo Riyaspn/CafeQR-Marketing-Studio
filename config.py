@@ -30,8 +30,14 @@ META_APP_ID = os.getenv("META_APP_ID", "2416033692232877")
 CAFE_QR_PAGE_ID = os.getenv("CAFE_QR_PAGE_ID", "869472002909292")
 INSTAGRAM_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID", "")
 
-# Google Gemini API Key (Optional free tier key; engine includes deterministic fallback)
+# Google Gemini API Key (Optional)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+# NVIDIA NIM API (Active High-Speed Models)
+NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
+NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
+MODEL_PRIMARY = "poolside/laguna-xs-2.1"
+MODEL_FALLBACK = "nvidia/nemotron-3.5-bolt-e4b"
 
 # Cafe QR Brand Positioning & Official Channels
 BRAND_NAME = "Cafe QR POS"
