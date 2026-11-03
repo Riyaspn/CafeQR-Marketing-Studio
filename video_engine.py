@@ -776,7 +776,7 @@ def render_reel_video(creative_data, voice_key="prabhat", filename=None):
         <div class="printer-container">
           <img class="printer-img" src="{printer_b64}" alt="Thermal Printer" />
           <div class="animated-receipt">
-            <div style="font-weight: bold; text-align: center;">CAFE QR 2.0</div>
+            <div style="font-weight: bold; text-align: center;">CAFE QR</div>
             <div style="border-bottom: 1px dashed #666; margin: 4px 0;"></div>
             <div>TABLE #04 • 0.8s KOT</div>
             <div>TOTAL: ₹500.00</div>

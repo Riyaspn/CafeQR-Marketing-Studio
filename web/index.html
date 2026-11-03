@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cafe QR 2.0 — Viral Marketing & Content Studio</title>
+  <title>Cafe QR — Viral Marketing & Content Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
   <!-- Top Navigation Bar -->
   <header class="studio-header">
     <div class="header-left">
-      <div class="logo-badge">CAFE <span>QR 2.0</span></div>
+      <div class="logo-badge">CAFE <span>QR</span></div>
       <div class="tagline">VIRAL MARKETING &amp; TREND-JACKING STUDIO</div>
     </div>
     <div class="header-right">
@@ -39,16 +39,29 @@
       <div class="sidebar-header">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div class="section-title">
-            <span>⚡</span> Live F&amp;B Trend Radar
+            <span>⚡</span> Multi-Vertical Trend Radar
           </div>
           <button class="btn btn-secondary btn-sm" onclick="harvestIntel()" style="padding: 4px 10px; font-size: 11px;" title="Crawl competitor feeds & update Swipe Vault">🌾 Harvest</button>
         </div>
-        <div class="section-subtitle">Real-time Indian restaurant news &amp; viral controversies</div>
+        <div class="section-subtitle">Real-time news for Restaurants, Bakeries, Car Washes, Boutiques &amp; POS</div>
+      </div>
+
+      <!-- Domain Vertical Filter -->
+      <div style="padding: 0 16px 12px 16px;">
+        <select id="verticalFilter" onchange="filterTrendsByVertical(this.value)" style="width: 100%; background: #1E293B; color: #F8FAFC; border: 1px solid rgba(255,255,255,0.12); padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;">
+          <option value="all">🌐 All Multi-Verticals (10 Streams)</option>
+          <option value="Restaurants">🍽️ Restaurants &amp; Cafes</option>
+          <option value="Bakeries">🥐 Bakeries &amp; Sweet Shops</option>
+          <option value="Car Washes">🚗 Car Washes &amp; Auto Care</option>
+          <option value="Boutiques">👗 Boutiques &amp; Retail</option>
+          <option value="Universal">⚡ POS Monopoly Disruption</option>
+          <option value="GST">📋 GST &amp; Compliance</option>
+        </select>
       </div>
 
       <!-- Custom Topic Input -->
       <div class="custom-input-card">
-        <input type="text" id="customTopicInput" placeholder="Or type any topic (e.g. Swiggy ₹10 fee)..." />
+        <input type="text" id="customTopicInput" placeholder="Or type any topic (e.g. Swiggy ₹15 fee, car wash tokens)..." />
         <button class="btn btn-primary btn-sm" onclick="generateFromCustom()">Generate</button>
       </div>
 

@@ -40,12 +40,22 @@ MODEL_PRIMARY = "poolside/laguna-xs-2.1"
 MODEL_FALLBACK = "nvidia/nemotron-3.5-bolt-e4b"
 
 # Cafe QR Brand Positioning & Official Channels
-BRAND_NAME = "Cafe QR POS"
-BRAND_URL = "https://cafeqr.in"
+BRAND_NAME = "Cafe QR"
+BRAND_URL = "https://www.cafeqr.in"
 PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.cafeqr.app&hl=en_IN"
 INSTAGRAM_URL = "https://www.instagram.com/cafe_qr_?igsh=MTd5azRiNmM4bDU0aw%3D%3D&utm_source=qr"
 WHATSAPP_DEMO_PHONE = os.getenv("WHATSAPP_DEMO_PHONE", "919400000000")
-WHATSAPP_DEMO_LINK = f"https://wa.me/{WHATSAPP_DEMO_PHONE}?text=Hi%20Cafe%20QR,%20I%20want%20a%20free%20live%20demo%20for%20my%20restaurant."
+WHATSAPP_DEMO_LINK = f"https://wa.me/{WHATSAPP_DEMO_PHONE}?text=Hi%20Cafe%20QR,%20I%20want%20a%20free%20live%20demo%20for%20my%20business."
+
+# Supported Multi-Vertical Domains
+SUPPORTED_VERTICALS = [
+    "Restaurants & Cafes (Table QR, Thermal KOT, 0% Commission Direct Delivery)",
+    "Bakeries & Confectioneries (Batch Production, Fresh Expiry & Barcode Billing)",
+    "Car Washes & Auto Care (Job Cards, Service Tokens & WhatsApp Status Updates)",
+    "Boutiques & Retail Stores (Barcode Scanning, Inventory Tags & Udhaar Tabs)",
+    "Salons & Spas (Service Appointments, Stylist Commissions & Client CRM)",
+    "Cloud Kitchens & Takeaway QSRs (Order Aggregation, Instant Thermal Print & UPI)"
+]
 
 # Official Transparent "Pay-Only-For-What-You-Need" Pricing (in ₹)
 PRICING_BASE_YEAR_1 = 2498        # ₹999 Annual Sub + ₹1,499 Setup & Onboarding

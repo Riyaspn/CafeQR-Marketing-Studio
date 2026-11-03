@@ -27,13 +27,15 @@ async function checkMetaStatus() {
   }
 }
 
-// 2. Load Trends from Trend Radar
+let allTrends = [];
+
+// 2. Load Trends from Multi-Vertical Trend Radar
 async function loadTrends() {
   const list = document.getElementById('trendList');
   list.innerHTML = `
     <div class="loading-state">
       <div class="spinner"></div>
-      <p>Scanning Google News RSS for Indian F&B controversies...</p>
+      <p>Scanning 10 Multi-Vertical Streams (Restaurants, Bakeries, Car Washes, Boutiques)...</p>
     </div>
   `;
 
@@ -41,27 +43,50 @@ async function loadTrends() {
     const res = await fetch('/api/trends');
     const data = await res.json();
     if (data.trends && data.trends.length > 0) {
-      list.innerHTML = '';
-      data.trends.forEach((t, i) => {
-        const item = document.createElement('div');
-        item.className = 'trend-item';
-        item.onclick = () => selectTrend(t, item);
-        item.innerHTML = `
-          <span class="trend-badge">${t.category_label || t.category}</span>
-          <div class="trend-title">${t.title}</div>
-          <div class="trend-meta">
-            <span>📰 ${t.source}</span>
-            <span>⚡ Click to Draft</span>
-          </div>
-        `;
-        list.appendChild(item);
-      });
+      allTrends = data.trends;
+      const filterVal = document.getElementById('verticalFilter') ? document.getElementById('verticalFilter').value : 'all';
+      renderTrendsList(filterVal);
     } else {
       list.innerHTML = '<p style="padding: 20px; color: #94A3B8;">No trends found. Try refreshing or use a custom topic.</p>';
     }
   } catch (e) {
     list.innerHTML = `<p style="padding: 20px; color: #EF4444;">Failed to fetch trends: ${e.message}</p>`;
   }
+}
+
+function filterTrendsByVertical(vertical) {
+  renderTrendsList(vertical);
+}
+
+function renderTrendsList(vertical) {
+  const list = document.getElementById('trendList');
+  list.innerHTML = '';
+  const filtered = (!vertical || vertical === 'all')
+    ? allTrends
+    : allTrends.filter(t => (t.vertical || '').toLowerCase().includes(vertical.toLowerCase()));
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<p style="padding: 20px; color: #94A3B8;">No stories found in this vertical. Try another or enter a custom topic above.</p>';
+    return;
+  }
+
+  filtered.forEach((t) => {
+    const item = document.createElement('div');
+    item.className = 'trend-item';
+    item.onclick = () => selectTrend(t, item);
+    item.innerHTML = `
+      <div style="display: flex; gap: 6px; align-items: center; margin-bottom: 6px; flex-wrap: wrap;">
+        <span class="trend-badge">${t.category_label || t.category}</span>
+        <span style="font-size: 11px; background: rgba(255,255,255,0.06); padding: 2px 8px; border-radius: 6px; color: #94A3B8;">🏷️ ${t.vertical || 'Multi-Vertical'}</span>
+      </div>
+      <div class="trend-title">${t.title}</div>
+      <div class="trend-meta">
+        <span>📰 ${t.source}</span>
+        <span>⚡ Click to Draft</span>
+      </div>
+    `;
+    list.appendChild(item);
+  });
 }
 
 // 3. Select a Trend and Generate Campaign
