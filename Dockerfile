@@ -1,5 +1,5 @@
 # Production Dockerfile for Cafe QR Marketing Studio
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # Prevent Python from writing .pyc files and buffer outputs
 ENV PYTHONDONTWRITEBYTECODE=1
