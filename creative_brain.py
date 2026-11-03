@@ -9,7 +9,65 @@ from config import (
 )
 from knowledge_vault.evaluator import score_creative
 
-def call_nvidia_nim(messages, model=None, temperature=0.3, max_tokens=1000, timeout=30):
+def call_gemini_api(messages_or_prompt, temperature=0.3, max_tokens=1500, timeout=30):
+    """
+    Direct Google Gemini API client supporting gemini-2.5-flash, gemini-2.0-flash, gemini-1.5-flash.
+    Works natively with standard REST using GEMINI_API_KEY.
+    """
+    api_key = GEMINI_API_KEY
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is not configured")
+
+    system_instruction = None
+    if isinstance(messages_or_prompt, list):
+        prompt_parts = []
+        for m in messages_or_prompt:
+            role = m.get("role", "user")
+            content = m.get("content", "")
+            if role == "system":
+                system_instruction = content
+            else:
+                prompt_parts.append(f"{content}")
+        full_prompt = "\n\n".join(prompt_parts)
+    else:
+        full_prompt = str(messages_or_prompt)
+
+    candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+    last_err = None
+
+    for m_name in candidate_models:
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/{m_name}:generateContent?key={api_key}"
+        payload = {
+            "contents": [{
+                "parts": [{"text": full_prompt}]
+            }],
+            "generationConfig": {
+                "temperature": temperature,
+                "maxOutputTokens": max_tokens
+            }
+        }
+        if system_instruction:
+            payload["systemInstruction"] = {
+                "parts": [{"text": system_instruction}]
+            }
+
+        try:
+            r = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=timeout)
+            if r.status_code == 200:
+                data = r.json()
+                candidates = data.get("candidates", [])
+                if candidates:
+                    parts = candidates[0].get("content", {}).get("parts", [])
+                    if parts:
+                        return parts[0].get("text", "")
+            else:
+                last_err = f"{m_name} status {r.status_code}: {r.text[:120]}"
+        except Exception as e:
+            last_err = f"{m_name} error: {str(e)[:120]}"
+
+    raise RuntimeError(f"All Gemini models failed. Last error: {last_err}")
+
+def call_nvidia_nim_core(messages, model=None, temperature=0.3, max_tokens=1000, timeout=30):
     """
     High-resilience client for NVIDIA NIM API with automated fallback.
     Tries MODEL_PRIMARY first, then falls back to MODEL_FALLBACK.
@@ -47,6 +105,40 @@ def call_nvidia_nim(messages, model=None, temperature=0.3, max_tokens=1000, time
             last_error = f"Model {m} exception: {str(e)[:120]}"
 
     raise RuntimeError(f"All NVIDIA NIM models failed. Last error: {last_error}")
+
+def call_llm(messages, model=None, temperature=0.3, max_tokens=1200, timeout=30):
+    """
+    Unified Dual-Engine LLM caller:
+    - If NVIDIA_API_KEY is present: calls NVIDIA NIM with automatic fallback to Gemini.
+    - If GEMINI_API_KEY is present: calls Google Gemini.
+    - Guarantees zero downtime even if one API key is missing or rate-limited.
+    """
+    errors = []
+
+    # 1. Try NVIDIA NIM if configured
+    if NVIDIA_API_KEY:
+        try:
+            return call_nvidia_nim_core(messages, model=model, temperature=temperature, max_tokens=max_tokens, timeout=timeout)
+        except Exception as e:
+            errors.append(f"NVIDIA NIM error: {e}")
+            print(f"[CreativeBrain] NVIDIA NIM failed: {e}. Falling back to Google Gemini...")
+
+    # 2. Try Google Gemini if configured
+    if GEMINI_API_KEY:
+        try:
+            return call_gemini_api(messages, temperature=temperature, max_tokens=max_tokens, timeout=timeout)
+        except Exception as e:
+            errors.append(f"Google Gemini error: {e}")
+            print(f"[CreativeBrain] Google Gemini failed: {e}")
+
+    if not NVIDIA_API_KEY and not GEMINI_API_KEY:
+        raise ValueError("Neither NVIDIA_API_KEY nor GEMINI_API_KEY is configured in environment.")
+
+    raise RuntimeError(f"All LLM engines failed: {'; '.join(errors)}")
+
+def call_nvidia_nim(messages, model=None, temperature=0.3, max_tokens=1000, timeout=30):
+    """Backwards compatibility alias for call_llm"""
+    return call_llm(messages, model=model, temperature=temperature, max_tokens=max_tokens, timeout=timeout)
 
 def clean_json_response(raw_text):
     """

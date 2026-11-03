@@ -762,3 +762,26 @@ async function harvestIntel() {
     hideLoading();
   }
 }
+
+// 11. Trigger Autonomous Poster Cycle & Telegram Alert On-Demand
+async function triggerAutonomousCycle() {
+  showLoading('🤖 Running Autonomous Poster Cycle: scanning 26 news streams, generating campaign & dispatching Telegram alert...');
+  try {
+    const res = await fetch('/api/trigger-cron', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert('🚀 Autonomous Poster Cycle Triggered!\n\nYour AI Agent is generating the campaign in the cloud and will ping your Telegram bot momentarily.\n\nClick "Latest Draft" in 10-15 seconds to view it here.');
+      setTimeout(loadLatestDraft, 12000);
+    } else {
+      alert(`Notice: ${data.message || 'Cycle could not start'}`);
+    }
+  } catch (e) {
+    alert(`Trigger error: ${e.message}`);
+  } finally {
+    hideLoading();
+  }
+}

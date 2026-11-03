@@ -174,15 +174,8 @@ class StudioHandler(SimpleHTTPRequestHandler):
             campaign["poster_url"] = f"/drafts/{poster_filename}"
             campaign["poster_file"] = poster_path
 
-            # Render Video Reel
-            try:
-                reel_path = video_engine.render_reel_video(campaign, voice_key=voice_pref)
-                reel_filename = os.path.basename(reel_path)
-                campaign["reel_url"] = f"/drafts/{reel_filename}"
-                campaign["reel_file"] = reel_path
-            except Exception as e:
-                campaign["reel_url"] = None
-                campaign["reel_error"] = str(e)
+            # Fast-Path: Poster generation only (Instant ~2s response; Video Reel is generated on-demand via /api/render-reel)
+            campaign["reel_url"] = None
 
             # Save draft metadata
             meta_path = DRAFTS_DIR / f"campaign_{Path(poster_filename).stem}.json"
