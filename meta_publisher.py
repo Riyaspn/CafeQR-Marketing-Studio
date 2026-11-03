@@ -208,6 +208,68 @@ def publish_to_instagram(media_public_url, caption="", is_video=False):
     except Exception as e:
         return {"success": False, "platform": "Instagram", "error": str(e)}
 
+def publish_to_instagram_story(media_public_url, is_video=False):
+    """
+    Publishes a photo or video directly to Instagram Stories via Meta Graph API.
+    Note: Instagram Stories API requires media_type='STORIES' and a publicly accessible HTTPS URL.
+    """
+    if not META_ACCESS_TOKEN:
+        return {"success": False, "error": "Missing Meta Access Token"}
+    if not INSTAGRAM_ACCOUNT_ID:
+        return {"success": False, "error": "No linked Instagram Business Account ID specified"}
+
+    # Step 1: Create Story Container
+    container_url = f"{BASE_GRAPH_URL}/{INSTAGRAM_ACCOUNT_ID}/media"
+    params = {
+        "access_token": META_ACCESS_TOKEN,
+        "media_type": "STORIES"
+    }
+    if is_video:
+        params["video_url"] = media_public_url
+    else:
+        params["image_url"] = media_public_url
+
+    encoded_params = urllib.parse.urlencode(params).encode("utf-8")
+    req = urllib.request.Request(container_url, data=encoded_params)
+
+    try:
+        with urllib.request.urlopen(req, timeout=30) as res:
+            res_data = json.loads(res.read().decode())
+            creation_id = res_data.get("id")
+
+        if not creation_id:
+            return {"success": False, "error": "Failed to create Instagram Story container"}
+
+        # For video stories, poll status until 'FINISHED'
+        if is_video:
+            for _ in range(12):
+                time.sleep(5)
+                status_url = f"{BASE_GRAPH_URL}/{creation_id}?fields=status_code&access_token={META_ACCESS_TOKEN}"
+                status_res = json.loads(urllib.request.urlopen(status_url).read().decode())
+                if status_res.get("status_code") == "FINISHED":
+                    break
+                elif status_res.get("status_code") == "ERROR":
+                    return {"success": False, "error": "Instagram Story video transcoding failed"}
+
+        # Step 2: Publish Story Container
+        publish_url = f"{BASE_GRAPH_URL}/{INSTAGRAM_ACCOUNT_ID}/media_publish"
+        pub_params = urllib.parse.urlencode({
+            "creation_id": creation_id,
+            "access_token": META_ACCESS_TOKEN
+        }).encode("utf-8")
+        pub_req = urllib.request.Request(publish_url, data=pub_params)
+        with urllib.request.urlopen(pub_req, timeout=30) as pub_res:
+            pub_data = json.loads(pub_res.read().decode())
+            return {
+                "success": True,
+                "platform": "Instagram Story",
+                "post_id": pub_data.get("id")
+            }
+    except urllib.error.HTTPError as e:
+        return {"success": False, "platform": "Instagram Story", "error": e.read().decode()}
+    except Exception as e:
+        return {"success": False, "platform": "Instagram Story", "error": str(e)}
+
 if __name__ == "__main__":
     health = check_token_health()
     print("Meta API Status:", json.dumps(health, indent=2))

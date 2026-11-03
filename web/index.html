@@ -18,10 +18,17 @@
       <div class="tagline">VIRAL MARKETING &amp; TREND-JACKING STUDIO</div>
     </div>
     <div class="header-right">
-      <div id="metaStatusBadge" class="status-pill status-checking" onclick="openSettingsModal()">
+      <div id="metaStatusBadge" class="status-pill status-checking" onclick="openSettingsModal()" style="cursor: pointer;">
         <span class="status-dot"></span>
         <span id="metaStatusText">Checking Meta API...</span>
       </div>
+      <div id="tgStatusBadge" class="status-pill status-checking" onclick="openSettingsModal()" style="cursor: pointer;">
+        <span class="status-dot"></span>
+        <span id="tgStatusText">Checking Telegram...</span>
+      </div>
+      <button class="btn btn-secondary" onclick="loadLatestDraft()" title="Load latest autonomous post">
+        <span>⚡</span> Latest Draft
+      </button>
       <button class="btn btn-secondary" onclick="loadTrends()">
         <span>🔄</span> Refresh Trends
       </button>
@@ -49,13 +56,15 @@
       <!-- Domain Vertical Filter -->
       <div style="padding: 0 16px 12px 16px;">
         <select id="verticalFilter" onchange="filterTrendsByVertical(this.value)" style="width: 100%; background: #1E293B; color: #F8FAFC; border: 1px solid rgba(255,255,255,0.12); padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer;">
-          <option value="all">🌐 All Multi-Verticals (10 Streams)</option>
+          <option value="all">🌐 All Multi-Verticals (26 Streams)</option>
           <option value="Restaurants">🍽️ Restaurants &amp; Cafes</option>
           <option value="Bakeries">🥐 Bakeries &amp; Sweet Shops</option>
           <option value="Car Washes">🚗 Car Washes &amp; Auto Care</option>
           <option value="Boutiques">👗 Boutiques &amp; Retail</option>
           <option value="Universal">⚡ POS Monopoly Disruption</option>
           <option value="GST">📋 GST &amp; Compliance</option>
+          <option value="Salons">💇 Salons &amp; Spas</option>
+          <option value="Cloud Kitchens">🥡 Cloud Kitchens &amp; QSRs</option>
         </select>
       </div>
 
@@ -63,6 +72,12 @@
       <div class="custom-input-card">
         <input type="text" id="customTopicInput" placeholder="Or type any topic (e.g. Swiggy ₹15 fee, car wash tokens)..." />
         <button class="btn btn-primary btn-sm" onclick="generateFromCustom()">Generate</button>
+      </div>
+
+      <!-- Viral URL Reverse-Engineer Input -->
+      <div class="custom-input-card" style="margin-top: 8px; border-color: rgba(16, 185, 129, 0.35); background: rgba(16, 185, 129, 0.04);">
+        <input type="text" id="viralUrlInput" placeholder="🔗 Paste Viral Reel/Shorts URL (yt-dlp + whisper)..." />
+        <button class="btn btn-sm" onclick="reverseEngineerFromUrl()" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: #fff; font-weight: 700;">Remaster</button>
       </div>
 
       <!-- Trend List Container -->
@@ -260,14 +275,27 @@
 
           <!-- 1-Click Social Media Publish Bar -->
           <div class="publish-dock">
+            <!-- Music & Algorithm Reach Booster Banner -->
+            <div class="music-reach-booster" style="background: rgba(255, 122, 0, 0.08); border: 1px solid rgba(255, 122, 0, 0.28); border-radius: 10px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap;">
+              <div>
+                <span style="font-weight: 700; color: #FF7A00;">🎵 Recommended Trending Audio:</span>
+                <span id="dockMusicTitle" style="color: #F8FAFC; margin-left: 6px; font-weight: 700;">Else — Paris</span>
+                <div style="font-size: 11px; color: #94A3B8; margin-top: 2px;">💡 Add this sound in Instagram Stories / Feed for 3x–5x organic algorithm boost.</div>
+              </div>
+              <button type="button" class="btn btn-secondary btn-sm" onclick="copyTrendingSound()" style="padding: 5px 12px; font-size: 12px;">📋 Copy Sound Title</button>
+            </div>
+
             <div class="dock-header">
-              <div class="dock-title">🚀 1-Click Meta Publishing</div>
-              <div class="platform-toggles">
-                <label class="toggle-label">
-                  <input type="checkbox" id="pubFacebook" checked /> Facebook Page
+              <div class="dock-title">🚀 1-Click Multi-Platform Publishing</div>
+              <div class="platform-toggles" style="display: flex; gap: 14px; flex-wrap: wrap;">
+                <label class="toggle-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" id="pubFacebook" checked /> 📘 Facebook Page
                 </label>
-                <label class="toggle-label">
-                  <input type="checkbox" id="pubInstagram" /> Instagram (Requires Public URL)
+                <label class="toggle-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" id="pubInstagram" checked /> 📸 Instagram Feed
+                </label>
+                <label class="toggle-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                  <input type="checkbox" id="pubStory" checked /> 📱 Instagram Story
                 </label>
               </div>
             </div>
@@ -294,21 +322,46 @@
         <h3>⚙️ Marketing Engine Settings</h3>
         <button class="modal-close" onclick="closeSettingsModal()">✕</button>
       </div>
-      <div class="modal-body">
+      <div class="modal-body" style="max-height: 75vh; overflow-y: auto;">
         <p class="modal-desc">
-          Update your Meta Graph API credentials and Google Gemini key. These are saved locally to your <code>.env</code> file.
+          Configure your Meta Graph API credentials, Telegram Alert Bot, and API keys. These are saved to your <code>.env</code> file.
         </p>
+
+        <!-- Telegram Alert Bot Setup Section -->
+        <div style="background: rgba(38, 166, 154, 0.08); border: 1px solid rgba(38, 166, 154, 0.3); border-radius: 12px; padding: 14px; margin-bottom: 16px;">
+          <div style="font-weight: 700; color: #26A69A; margin-bottom: 8px; font-size: 14px; display: flex; align-items: center; gap: 6px;">
+            <span>🤖</span> Telegram Alert Bot (Instant Phone Notification)
+          </div>
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label>Telegram Bot Token</label>
+            <input type="password" id="cfgTelegramToken" placeholder="7823456789:AAH..." />
+            <small>Get free in 1 minute from <a href="https://t.me/BotFather" target="_blank" style="color: #26A69A;">@BotFather</a> on Telegram.</small>
+          </div>
+          <div class="form-group" style="margin-bottom: 10px;">
+            <label>Telegram Chat ID or Channel ID</label>
+            <input type="text" id="cfgTelegramChatId" placeholder="e.g. 123456789 or @yourchannel" />
+            <small>Get your personal chat ID from <a href="https://t.me/userinfobot" target="_blank" style="color: #26A69A;">@userinfobot</a>.</small>
+          </div>
+          <div class="form-group">
+            <label>Public Web Studio URL</label>
+            <input type="text" id="cfgStudioUrl" placeholder="https://cafeqr-marketing-studio.onrender.com" />
+            <small>URL linked in Telegram alerts for 1-click opening on your mobile phone.</small>
+          </div>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="testTelegramAlert()" style="margin-top: 8px;">
+            📲 Send Test Alert to Telegram
+          </button>
+        </div>
         
         <div class="form-group">
           <label>Meta Access Token (Page Access Token)</label>
           <input type="password" id="cfgMetaToken" placeholder="EAAiVX..." />
-          <small>Generate from <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Meta Graph API Explorer</a> with <code>pages_manage_posts</code> permission.</small>
+          <small>Generate from <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Meta Graph API Explorer</a> with <code>pages_manage_posts</code>, <code>instagram_content_publish</code>.</small>
         </div>
 
         <div class="form-group">
           <label>Google Gemini API Key (Optional Free Tier)</label>
           <input type="password" id="cfgGeminiKey" placeholder="AIzaSy..." />
-          <small>Engine includes Hormozi-grade deterministic fallback if no key is provided.</small>
+          <small>Engine includes NVIDIA NIM Dual-Engine (DeepSeek-R1 + Llama-3.3-70B) &amp; deterministic fallbacks.</small>
         </div>
 
         <div class="form-group">

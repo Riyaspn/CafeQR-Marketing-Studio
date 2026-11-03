@@ -3,8 +3,10 @@ let currentTab = 'poster';
 
 document.addEventListener('DOMContentLoaded', () => {
   checkMetaStatus();
+  checkTelegramStatus();
   loadTrends();
   setupLiveEvaluation();
+  loadLatestDraft();
 });
 
 // 1. Check Meta Connection Status
@@ -27,6 +29,46 @@ async function checkMetaStatus() {
   }
 }
 
+// 1b. Check Telegram Alert Bot Health
+async function checkTelegramStatus() {
+  const badge = document.getElementById('tgStatusBadge');
+  const text = document.getElementById('tgStatusText');
+  if (!badge || !text) return;
+  try {
+    const res = await fetch('/api/telegram-status');
+    const data = await res.json();
+    if (data.configured && data.valid) {
+      badge.className = 'status-pill status-connected';
+      text.innerText = `🤖 TG Bot: @${data.bot.username || 'Active'}`;
+    } else if (data.configured && !data.valid) {
+      badge.className = 'status-pill status-expired';
+      text.innerText = `⚠️ TG Token Invalid`;
+    } else {
+      badge.className = 'status-pill status-expired';
+      text.innerText = `⚪ TG Bot Setup`;
+    }
+  } catch (e) {
+    badge.className = 'status-pill status-expired';
+    text.innerText = `⚪ TG Offline`;
+  }
+}
+
+// 1c. Load Latest Auto-Generated Campaign Draft
+async function loadLatestDraft() {
+  try {
+    const res = await fetch('/api/latest-draft');
+    const data = await res.json();
+    if (data.success && data.draft) {
+      currentCampaign = data.draft;
+      populateEditor(currentCampaign);
+      displayPreviews(currentCampaign);
+      switchPreviewTab('poster');
+    }
+  } catch (e) {
+    console.log('No previous auto-draft found:', e);
+  }
+}
+
 let allTrends = [];
 
 // 2. Load Trends from Multi-Vertical Trend Radar
@@ -35,7 +77,7 @@ async function loadTrends() {
   list.innerHTML = `
     <div class="loading-state">
       <div class="spinner"></div>
-      <p>Scanning 10 Multi-Vertical Streams (Restaurants, Bakeries, Car Washes, Boutiques)...</p>
+      <p>Scanning 26 Multi-Vertical Streams across India...</p>
     </div>
   `;
 
@@ -134,6 +176,41 @@ function generateFromCustom() {
   selectTrend(customTopic, null);
 }
 
+// 4b. Reverse-Engineer Viral URL (yt-dlp + whisper + AI remastering)
+async function reverseEngineerFromUrl() {
+  const input = document.getElementById('viralUrlInput');
+  const url = input.value.trim();
+  if (!url) {
+    alert('Please enter a valid Instagram Reel, YouTube Shorts, or video URL');
+    return;
+  }
+  const vertical = document.getElementById('verticalFilter') ? document.getElementById('verticalFilter').value : 'Restaurants & Cafes';
+
+  showLoading('Fetching video via yt-dlp, transcribing speech with Whisper & reverse-engineering viral hook...');
+  try {
+    const res = await fetch('/api/reverse-engineer', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: url, vertical: vertical })
+    });
+    const data = await res.json();
+    if (data.success && data.campaign) {
+      currentCampaign = data.campaign;
+      populateEditor(currentCampaign);
+      displayPreviews(currentCampaign);
+      switchPreviewTab('poster');
+      const intel = currentCampaign.reverse_intel || {};
+      alert(`✅ Viral Reverse-Engineering Succeeded!\n\n• Hook Pattern: ${intel.hook_formula || 'Direct Response'}\n• Archetype: ${intel.recommended_visual_archetype || 'Custom'}\n\nRemastered poster generated for Cafe QR!`);
+    } else {
+      alert(`Reverse-engineering error: ${data.error || 'Failed to process video URL'}`);
+    }
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  } finally {
+    hideLoading();
+  }
+}
+
 // 5. Populate Editor Fields
 function populateEditor(campaign) {
   document.getElementById('editHeadline').value = campaign.headline || '';
@@ -161,6 +238,11 @@ function populateEditor(campaign) {
     const vol = ap.bgm_volume !== undefined ? Math.round(ap.bgm_volume * 100) : 18;
     if (slider) slider.value = vol;
     if (valText) valText.innerText = `${vol}%`;
+
+    const dockMusic = document.getElementById('dockMusicTitle');
+    if (dockMusic) {
+      dockMusic.innerText = ap.trending_ig_tip || 'Trending Commercial Beat';
+    }
   }
 }
 
@@ -310,7 +392,7 @@ async function reRenderReel() {
   }
 }
 
-// 9. 1-Click Approve & Publish to Meta
+// 9. 1-Click Approve & Publish to Meta (Facebook Page, Instagram Feed & Story)
 async function publishApprovedCampaign() {
   if (!currentCampaign) {
     alert('Please generate or select a campaign first.');
@@ -319,17 +401,18 @@ async function publishApprovedCampaign() {
 
   const pubFb = document.getElementById('pubFacebook').checked;
   const pubIg = document.getElementById('pubInstagram').checked;
+  const pubStory = document.getElementById('pubStory') ? document.getElementById('pubStory').checked : false;
   const caption = document.getElementById('editCaption').value;
   const feedback = document.getElementById('publishStatus');
   const btn = document.getElementById('publishBtn');
 
-  if (!pubFb && !pubIg) {
-    alert('Please select at least one publishing platform (Facebook or Instagram).');
+  if (!pubFb && !pubIg && !pubStory) {
+    alert('Please select at least one publishing platform (Facebook, Instagram Feed, or Instagram Story).');
     return;
   }
 
   btn.disabled = true;
-  btn.innerText = '⏳ PUBLISHING TO META API...';
+  btn.innerText = '⏳ PUBLISHING TO SOCIAL PLATFORMS...';
   feedback.className = 'publish-feedback';
   feedback.classList.remove('hidden');
   feedback.innerText = 'Connecting to Meta Graph API...';
@@ -343,7 +426,9 @@ async function publishApprovedCampaign() {
         video_path: currentCampaign.reel_file,
         caption: caption,
         facebook: pubFb,
-        instagram: pubIg
+        instagram: pubIg,
+        story: pubStory,
+        public_media_url: currentCampaign.poster_url ? (window.location.origin + currentCampaign.poster_url) : ''
       })
     });
     const data = await res.json();
@@ -396,26 +481,51 @@ async function loadDraftsGallery() {
   const grid = document.getElementById('draftsGrid');
   grid.innerHTML = '<div class="spinner"></div>';
   try {
-    const res = await fetch('/api/drafts');
+    const res = await fetch('/api/saved-campaigns');
     const data = await res.json();
     grid.innerHTML = '';
-    if (data.drafts && data.drafts.length > 0) {
-      data.drafts.forEach(d => {
+    if (data.campaigns && data.campaigns.length > 0) {
+      data.campaigns.forEach((camp, idx) => {
         const card = document.createElement('div');
         card.className = 'draft-item-card';
-        card.style.cssText = 'background: #151C2C; padding: 12px; border-radius: 12px; border: 1px solid #26334D; display: flex; flex-direction: column; gap: 8px; align-items: center;';
-        if (d.type === 'image') {
-          card.innerHTML = `<img src="${d.url}" style="max-height: 140px; border-radius: 8px;" /><a href="${d.url}" target="_blank" style="color: #FF7A00; font-size: 12px;">${d.name}</a>`;
-        } else if (d.type === 'video') {
-          card.innerHTML = `<video src="${d.url}" style="max-height: 140px; border-radius: 8px;" controls></video><a href="${d.url}" target="_blank" style="color: #FF7A00; font-size: 12px;">${d.name}</a>`;
-        }
+        card.style.cssText = 'background: #151C2C; padding: 14px; border-radius: 12px; border: 1px solid #26334D; display: flex; flex-direction: column; gap: 10px;';
+        
+        const posterSrc = camp.poster_url || '';
+        const headline = camp.headline || 'Cafe QR Campaign';
+        const vertical = camp.target_vertical || 'Multi-Vertical';
+        const date = camp.created_at || 'Recent';
+
+        card.innerHTML = `
+          <div style="position: relative; width: 100%; border-radius: 8px; overflow: hidden; background: #0B0F19; display: flex; justify-content: center; align-items: center;">
+            <img src="${posterSrc}" style="max-height: 180px; width: auto; object-fit: contain; cursor: pointer;" onclick="loadSpecificCampaign(${idx})" />
+            <span style="position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.7); font-size: 11px; padding: 2px 8px; border-radius: 4px; color: #FF7A00; font-weight: 700;">🏷️ ${vertical}</span>
+          </div>
+          <div style="font-weight: 700; font-size: 13px; color: #F8FAFC; line-height: 1.3;">${headline}</div>
+          <div style="font-size: 11px; color: #94A3B8;">🕒 Generated: ${date}</div>
+          <div style="display: flex; gap: 8px; margin-top: auto;">
+            <button class="btn btn-primary btn-sm" onclick="loadSpecificCampaign(${idx})" style="flex: 1; padding: 6px; font-size: 12px;">⚡ Load &amp; Approve</button>
+            <a href="${posterSrc}" download="${camp.headline || 'poster'}.png" class="btn btn-secondary btn-sm" style="padding: 6px 10px;">⬇️</a>
+          </div>
+        `;
         grid.appendChild(card);
       });
+      window.cachedSavedCampaigns = data.campaigns;
     } else {
-      grid.innerHTML = '<p style="color: #94A3B8;">No drafts saved yet.</p>';
+      grid.innerHTML = '<p style="color: #94A3B8; padding: 20px;">No autonomous campaigns saved yet. Click any news headline on the left to generate one!</p>';
     }
   } catch (e) {
-    grid.innerHTML = '<p style="color: #EF4444;">Failed to load drafts.</p>';
+    grid.innerHTML = '<p style="color: #EF4444; padding: 20px;">Failed to load saved campaigns.</p>';
+  }
+}
+
+function loadSpecificCampaign(idx) {
+  if (window.cachedSavedCampaigns && window.cachedSavedCampaigns[idx]) {
+    const camp = window.cachedSavedCampaigns[idx];
+    currentCampaign = camp;
+    populateEditor(camp);
+    displayPreviews(camp);
+    switchPreviewTab('poster');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 }
 
@@ -433,10 +543,37 @@ function openSettingsModal() {
 function closeSettingsModal() {
   document.getElementById('settingsModal').classList.add('hidden');
 }
+
+async function testTelegramAlert() {
+  const status = document.getElementById('settingsSaveStatus');
+  status.className = 'save-status';
+  status.classList.remove('hidden');
+  status.innerText = 'Dispatching test ping to your Telegram bot...';
+
+  try {
+    const res = await fetch('/api/test-telegram', { method: 'POST' });
+    const data = await res.json();
+    if (data.success) {
+      status.className = 'save-status success';
+      status.innerText = '✅ Test alert delivered to your Telegram! Check your app.';
+      checkTelegramStatus();
+    } else {
+      status.className = 'save-status error';
+      status.innerText = `❌ Delivery failed: ${data.error || 'Check Bot Token & Chat ID'}`;
+    }
+  } catch (e) {
+    status.className = 'save-status error';
+    status.innerText = `Error: ${e.message}`;
+  }
+}
+
 async function saveSettings() {
   const token = document.getElementById('cfgMetaToken').value.trim();
   const gemini = document.getElementById('cfgGeminiKey').value.trim();
   const phone = document.getElementById('cfgWhatsAppPhone').value.trim();
+  const tgToken = document.getElementById('cfgTelegramToken') ? document.getElementById('cfgTelegramToken').value.trim() : '';
+  const tgChat = document.getElementById('cfgTelegramChatId') ? document.getElementById('cfgTelegramChatId').value.trim() : '';
+  const studioUrl = document.getElementById('cfgStudioUrl') ? document.getElementById('cfgStudioUrl').value.trim() : '';
   const status = document.getElementById('settingsSaveStatus');
 
   try {
@@ -446,17 +583,21 @@ async function saveSettings() {
       body: JSON.stringify({
         meta_token: token,
         gemini_key: gemini,
-        whatsapp_phone: phone
+        whatsapp_phone: phone,
+        telegram_token: tgToken,
+        telegram_chat_id: tgChat,
+        studio_url: studioUrl
       })
     });
     const data = await res.json();
     if (data.success) {
       status.className = 'save-status success';
       status.classList.remove('hidden');
-      status.innerText = 'Settings saved to .env! Verifying Meta status...';
+      status.innerText = 'Settings saved to .env! Verifying Meta & Telegram connections...';
       setTimeout(() => {
         closeSettingsModal();
         checkMetaStatus();
+        checkTelegramStatus();
       }, 1500);
     }
   } catch (e) {

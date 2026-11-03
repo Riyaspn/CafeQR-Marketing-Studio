@@ -2,6 +2,8 @@ import os
 import sys
 import json
 import mimetypes
+import threading
+import time
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
@@ -15,7 +17,12 @@ from config import (
     META_ACCESS_TOKEN,
     CAFE_QR_PAGE_ID,
     INSTAGRAM_ACCOUNT_ID,
-    GEMINI_API_KEY
+    GEMINI_API_KEY,
+    TELEGRAM_BOT_TOKEN,
+    TELEGRAM_CHAT_ID,
+    STUDIO_PUBLIC_URL,
+    AUTONOMOUS_CRON_ENABLED,
+    AUTONOMOUS_CRON_INTERVAL_HOURS
 )
 import trend_radar
 import creative_brain
@@ -23,6 +30,8 @@ import poster_engine
 import video_engine
 import meta_publisher
 import music_fetcher
+import telegram_notifier
+import autonomous_cron
 from knowledge_vault.evaluator import score_creative
 
 PORT = int(os.environ.get("PORT", 8899))
@@ -53,6 +62,41 @@ class StudioHandler(SimpleHTTPRequestHandler):
         elif path == "/api/meta-status":
             health = meta_publisher.check_token_health()
             self._send_json(health)
+            return
+
+        # 2b. API: Telegram Bot Status Check
+        elif path == "/api/telegram-status":
+            tg_health = telegram_notifier.check_telegram_bot_health()
+            self._send_json(tg_health)
+            return
+
+        # 2c. API: Fetch Latest Auto-Generated Campaign Draft
+        elif path == "/api/latest-draft":
+            saved_file = DRAFTS_DIR / "saved_drafts.json"
+            if saved_file.exists():
+                try:
+                    with open(saved_file, "r", encoding="utf-8") as f:
+                        drafts = json.load(f)
+                        if drafts and len(drafts) > 0:
+                            self._send_json({"success": True, "draft": drafts[0]})
+                            return
+                except Exception as e:
+                    self._send_json({"success": False, "error": str(e)})
+                    return
+            self._send_json({"success": False, "message": "No drafts found"})
+            return
+
+        # 2d. API: Fetch All Saved Autonomous Campaigns
+        elif path == "/api/saved-campaigns":
+            saved_file = DRAFTS_DIR / "saved_drafts.json"
+            campaigns = []
+            if saved_file.exists():
+                try:
+                    with open(saved_file, "r", encoding="utf-8") as f:
+                        campaigns = json.load(f)
+                except Exception:
+                    pass
+            self._send_json({"success": True, "campaigns": campaigns})
             return
 
         # 3. API: List Drafts
@@ -175,6 +219,21 @@ class StudioHandler(SimpleHTTPRequestHandler):
             self._send_json({"success": True, "result": result})
             return
 
+        # 2d. API: Reverse-Engineer Viral URL via yt-dlp + whisper
+        elif path == "/api/reverse-engineer":
+            url = body.get("url", "").strip()
+            vertical = body.get("vertical", "Restaurants & Cafes")
+            if not url:
+                self._send_json({"success": False, "error": "URL required"})
+                return
+            try:
+                import viral_reverse_engineer
+                campaign = viral_reverse_engineer.reverse_engineer_and_remaster(url, target_vertical=vertical)
+                self._send_json({"success": True, "campaign": campaign})
+            except Exception as e:
+                self._send_json({"success": False, "error": str(e)})
+            return
+
         # 3. API: Re-Render Reel Video
         elif path == "/api/render-reel":
             creative_data = body.get("creative", {})
@@ -209,13 +268,14 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 self._send_json({"success": False, "error": "No matching royalty-free audio found for this query."})
             return
 
-        # 4. API: 1-Click Publish to Meta (Facebook & Instagram)
+        # 4. API: 1-Click Publish to Meta (Facebook, Instagram Feed & Stories)
         elif path == "/api/publish":
             image_path = body.get("image_path")
             video_path = body.get("video_path")
             caption = body.get("caption", "")
             target_fb = body.get("facebook", True)
             target_ig = body.get("instagram", False)
+            target_story = body.get("story", False)
 
             results = []
 
@@ -228,7 +288,7 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 )
                 results.append(fb_res)
 
-            # Post to Instagram
+            # Post to Instagram Feed / Reel
             if target_ig:
                 ig_public_url = body.get("public_media_url", "")
                 if ig_public_url:
@@ -240,12 +300,43 @@ class StudioHandler(SimpleHTTPRequestHandler):
                     results.append(ig_res)
                 else:
                     results.append({
-                        "platform": "Instagram",
+                        "platform": "Instagram Feed",
                         "success": False,
                         "error": "Instagram requires a public HTTPS URL. Facebook direct upload succeeded."
                     })
 
+            # Post to Instagram Story
+            if target_story:
+                story_public_url = body.get("public_media_url", "")
+                if story_public_url:
+                    story_res = meta_publisher.publish_to_instagram_story(
+                        media_public_url=story_public_url,
+                        is_video=bool(video_path)
+                    )
+                    results.append(story_res)
+                else:
+                    results.append({
+                        "platform": "Instagram Story",
+                        "success": False,
+                        "error": "Instagram Story requires a public HTTPS URL."
+                    })
+
             self._send_json({"success": True, "results": results})
+            return
+
+        # 4b. API: Test Telegram Alert Bot
+        elif path == "/api/test-telegram":
+            res = telegram_notifier.send_test_alert()
+            self._send_json(res)
+            return
+
+        # 4c. API: Trigger Autonomous Cron Cycle On-Demand
+        elif path == "/api/trigger-cron":
+            try:
+                res = autonomous_cron.run_autonomous_poster_cycle()
+                self._send_json({"success": True, "cycle_result": res})
+            except Exception as e:
+                self._send_json({"success": False, "error": str(e)})
             return
 
         # 5. API: Update Token Settings
@@ -253,6 +344,9 @@ class StudioHandler(SimpleHTTPRequestHandler):
             new_token = body.get("meta_token", "").strip()
             new_gemini = body.get("gemini_key", "").strip()
             new_phone = body.get("whatsapp_phone", "").strip()
+            new_tg_token = body.get("telegram_token", "").strip()
+            new_tg_chat = body.get("telegram_chat_id", "").strip()
+            new_studio_url = body.get("studio_url", "").strip()
 
             env_lines = []
             if ENV_PATH.exists():
@@ -261,7 +355,7 @@ class StudioHandler(SimpleHTTPRequestHandler):
 
             def update_line(prefix, val):
                 for i, l in enumerate(env_lines):
-                    if l.startswith(prefix):
+                    if l.startswith(prefix + "="):
                         env_lines[i] = f"{prefix}={val}\n"
                         return
                 env_lines.append(f"{prefix}={val}\n")
@@ -272,6 +366,12 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 update_line("GEMINI_API_KEY", new_gemini)
             if new_phone:
                 update_line("WHATSAPP_DEMO_PHONE", new_phone)
+            if new_tg_token:
+                update_line("TELEGRAM_BOT_TOKEN", new_tg_token)
+            if new_tg_chat:
+                update_line("TELEGRAM_CHAT_ID", new_tg_chat)
+            if new_studio_url:
+                update_line("STUDIO_PUBLIC_URL", new_studio_url)
 
             with open(ENV_PATH, "w", encoding="utf-8") as f:
                 f.writelines(env_lines)
@@ -318,6 +418,23 @@ def run_server():
     print(f" 🚀 CAFE QR MARKETING STUDIO RUNNING")
     print(f" 🌐 URL: http://localhost:{PORT}")
     print(f"=======================================================\n")
+
+    # Start Autonomous Background Cron Worker if enabled
+    if AUTONOMOUS_CRON_ENABLED:
+        def cron_worker():
+            # Initial startup grace period before first autonomous sweep
+            print(f"⏰ [AutonomousCron] Background scheduler active (frequency: every {AUTONOMOUS_CRON_INTERVAL_HOURS}h).")
+            time.sleep(15)
+            while True:
+                try:
+                    autonomous_cron.run_autonomous_poster_cycle()
+                except Exception as e:
+                    print(f"⚠️ [AutonomousCron] Background cycle error: {e}")
+                time.sleep(AUTONOMOUS_CRON_INTERVAL_HOURS * 3600)
+
+        cron_thread = threading.Thread(target=cron_worker, daemon=True)
+        cron_thread.start()
+
     try:
         httpd.serve_forever()
     except KeyboardInterrupt:

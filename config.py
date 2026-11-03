@@ -33,11 +33,11 @@ INSTAGRAM_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID", "")
 # Google Gemini API Key (Optional)
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
-# NVIDIA NIM API (Active High-Speed Models)
+# NVIDIA NIM API (Active High-Speed Verified Models)
 NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
 NVIDIA_BASE_URL = "https://integrate.api.nvidia.com/v1"
-MODEL_PRIMARY = "poolside/laguna-xs-2.1"
-MODEL_FALLBACK = "nvidia/nemotron-3.5-bolt-e4b"
+MODEL_PRIMARY = "nvidia/nemotron-3.5-bolt-e4b"
+MODEL_FALLBACK = "poolside/laguna-xs-2.1"
 
 # Cafe QR Brand Positioning & Official Channels
 BRAND_NAME = "Cafe QR"
@@ -46,6 +46,15 @@ PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=com.cafeqr.app&h
 INSTAGRAM_URL = "https://www.instagram.com/cafe_qr_?igsh=MTd5azRiNmM4bDU0aw%3D%3D&utm_source=qr"
 WHATSAPP_DEMO_PHONE = os.getenv("WHATSAPP_DEMO_PHONE", "919400000000")
 WHATSAPP_DEMO_LINK = f"https://wa.me/{WHATSAPP_DEMO_PHONE}?text=Hi%20Cafe%20QR,%20I%20want%20a%20free%20live%20demo%20for%20my%20business."
+
+# Telegram Alert Bot Configuration
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+STUDIO_PUBLIC_URL = os.getenv("STUDIO_PUBLIC_URL", "https://cafeqr-marketing-studio.onrender.com").rstrip("/")
+
+# Autonomous Background Scheduler (Runs every 4 hours by default)
+AUTONOMOUS_CRON_ENABLED = os.getenv("AUTONOMOUS_CRON_ENABLED", "true").lower() in ("true", "1", "yes")
+AUTONOMOUS_CRON_INTERVAL_HOURS = int(os.getenv("AUTONOMOUS_CRON_INTERVAL_HOURS", "4"))
 
 # Supported Multi-Vertical Domains
 SUPPORTED_VERTICALS = [

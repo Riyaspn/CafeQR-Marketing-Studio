@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 import base64
 from pathlib import Path
@@ -96,6 +97,10 @@ def render_poster(creative_data, width=1080, height=1350, filename=None):
         html_content = html_content.replace("{{us_label}}", us_label)
         html_content = html_content.replace("{{them_points_html}}", them_html)
         html_content = html_content.replace("{{us_points_html}}", us_html)
+
+    # Deterministic Brand Safeguard: Ensure Year 2+ renewal is strictly ₹999/yr, never 9999 or 9,999
+    html_content = re.sub(r'(?:₹|Rs\.?|INR)?\s*9999\b(?:\s*/\s*(?:yr|year))?', '₹999/yr', html_content, flags=re.IGNORECASE)
+    html_content = re.sub(r'(?:₹|Rs\.?|INR)?\s*9,999\b(?:\s*/\s*(?:yr|year))?', '₹999/yr', html_content, flags=re.IGNORECASE)
 
     if not filename:
         uid = uuid.uuid4().hex[:8]
