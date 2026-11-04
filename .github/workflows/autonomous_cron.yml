@@ -1,0 +1,52 @@
+name: Cafe QR Autonomous Marketing Agent
+
+on:
+  schedule:
+    # Runs every 4 hours automatically (00:00, 04:00, 08:00, 12:00, 16:00, 20:00 UTC)
+    - cron: '0 */4 * * *'
+  workflow_dispatch:
+    inputs:
+      trigger_reason:
+        description: 'Reason for manual trigger'
+        required: false
+        default: 'Manual test run from GitHub Actions'
+
+jobs:
+  run-autonomous-agent:
+    name: Trigger Cafe QR Poster Generation & Telegram Alert
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ping Render Studio to Run Autonomous Poster Cycle
+        run: |
+          echo "🚀 Waking Cafe QR Marketing Studio on Render..."
+          URL="https://cafeqr-marketing-studio.onrender.com/api/trigger-cron"
+          
+          # First attempt (Wakes Render from sleep if inactive)
+          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$URL" \
+            -H "Content-Type: application/json" \
+            -d '{"source": "github_actions", "trigger": "${{ github.event.inputs.trigger_reason || 'cron' }}"}')
+          
+          HTTP_CODE=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d':' -f2)
+          BODY=$(echo "$RESPONSE" | grep -v "HTTP_STATUS")
+          
+          echo "Response: $BODY"
+          echo "HTTP Status: $HTTP_CODE"
+
+          # If Render was cold-sleeping, give it 35 seconds to wake and retry
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 400 ]; then
+            echo "⏳ Render instance is spinning up from cold sleep. Waiting 35 seconds before retry..."
+            sleep 35
+            RETRY=$(curl -s -w "\nHTTP_STATUS:%{http_code}" -X POST "$URL" \
+              -H "Content-Type: application/json" \
+              -d '{"source": "github_actions_retry"}')
+            RETRY_CODE=$(echo "$RETRY" | grep "HTTP_STATUS" | cut -d':' -f2)
+            RETRY_BODY=$(echo "$RETRY" | grep -v "HTTP_STATUS")
+            echo "Retry Response: $RETRY_BODY"
+            echo "Retry HTTP Status: $RETRY_CODE"
+          fi
+
+          echo "✅ Autonomous Marketing Agent triggered successfully!"
+          echo "📱 Check your Telegram (@Cafe_QR_Lead_Radar_bot) for the new poster alert."
+

@@ -49,9 +49,31 @@ def render_poster(creative_data, width=1080, height=1350, filename=None):
 
     # 1. Use AI-Generated Bespoke Freeform HTML/CSS Canvas
     custom_html = creative_data.get("poster_html")
-    if custom_html and ("<!DOCTYPE html>" in custom_html or "<html" in custom_html):
+    use_bespoke = bool(
+        custom_html 
+        and ("<!DOCTYPE html>" in custom_html or "<html" in custom_html)
+        and template_name in ["freeform_ai", "bespoke_ai", ""]
+    )
+
+    if use_bespoke:
         print("🎨 [PosterEngine] Rendering AI-generated bespoke Freeform HTML canvas...")
         html_content = custom_html
+
+        # Dynamically inject modified headline if updated in editor workbench
+        new_headline = creative_data.get("headline")
+        if new_headline:
+            words = new_headline.split()
+            if len(words) > 2:
+                split_idx = max(len(words) - 3, 2)
+                styled_h = f"{' '.join(words[:split_idx])} <span>{' '.join(words[split_idx:])}</span>"
+            else:
+                styled_h = f"<span>{new_headline}</span>"
+            html_content = re.sub(r'<h1 class="headline-main">.*?</h1>', f'<h1 class="headline-main">{styled_h}</h1>', html_content, flags=re.DOTALL)
+
+        new_subtext = creative_data.get("subtext")
+        if new_subtext:
+            html_content = re.sub(r'<p class="subtext-main">.*?</p>', f'<p class="subtext-main">{new_subtext}</p>', html_content, flags=re.DOTALL)
+
         html_content = html_content.replace("{{logo_img}}", logo_b64).replace("{logo_img}", logo_b64)
         html_content = html_content.replace("{{printer_img}}", printer_b64).replace("{printer_img}", printer_b64)
         html_content = html_content.replace("{{cafe_bg_img}}", cafe_bg_b64).replace("{cafe_bg_img}", cafe_bg_b64)

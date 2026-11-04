@@ -215,7 +215,7 @@ async function reverseEngineerFromUrl() {
 function populateEditor(campaign) {
   document.getElementById('editHeadline').value = campaign.headline || '';
   document.getElementById('editSubtext').value = campaign.subtext || '';
-  document.getElementById('editTemplate').value = campaign.template || 'agency_editorial';
+  document.getElementById('editTemplate').value = campaign.template || (campaign.poster_html ? 'freeform_ai' : 'agency_editorial');
   document.getElementById('editScript').value = campaign.script || '';
   document.getElementById('editCaption').value = campaign.caption || '';
   if (campaign.evaluation) {

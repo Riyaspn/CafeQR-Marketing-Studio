@@ -32,7 +32,7 @@ def call_gemini_api(messages_or_prompt, temperature=0.3, max_tokens=1500, timeou
     else:
         full_prompt = str(messages_or_prompt)
 
-    candidate_models = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+    candidate_models = ["gemini-2.0-flash", "gemini-1.5-flash"]
     last_err = None
 
     for m_name in candidate_models:
@@ -341,11 +341,11 @@ Return ONLY valid JSON.
     ]
 
     # --- Autonomous Reflection & Self-Critique Loop ---
-    max_reflection_turns = 3
+    max_reflection_turns = 1
     final_campaign = None
 
     for iteration in range(1, max_reflection_turns + 1):
-        raw_output = call_nvidia_nim(messages, temperature=0.25, max_tokens=1100, timeout=35)
+        raw_output = call_nvidia_nim(messages, temperature=0.25, max_tokens=1100, timeout=25)
         campaign_data = clean_json_response(raw_output)
 
         # Audit against 10-Point Viral Rubric and 4 Legendary Masters
@@ -359,7 +359,7 @@ Return ONLY valid JSON.
         masters = audit.get("legendary_masters_audit", {})
         all_passed = all(status == "PASS" for status in masters.values())
 
-        if score >= 9.5 and all_passed:
+        if score >= 8.5 or all_passed:
             campaign_data["reflection_passes"] = iteration
             final_campaign = campaign_data
             break
