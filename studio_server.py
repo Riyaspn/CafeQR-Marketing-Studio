@@ -24,6 +24,8 @@ from config import (
     AUTONOMOUS_CRON_ENABLED,
     AUTONOMOUS_CRON_INTERVAL_HOURS
 )
+import config
+import traceback
 import trend_radar
 import creative_brain
 import poster_engine
@@ -185,7 +187,6 @@ class StudioHandler(SimpleHTTPRequestHandler):
 
                 self._send_json({"success": True, "campaign": campaign})
             except Exception as e:
-                import traceback
                 traceback.print_exc()
                 self._send_json({"success": False, "error": str(e)})
             return
@@ -439,40 +440,30 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 update_line("META_ADS_ACCESS_TOKEN", new_token)
                 os.environ["META_ADS_ACCESS_TOKEN"] = new_token
                 os.environ["META_ACCESS_TOKEN"] = new_token
-                import config
                 config.META_ACCESS_TOKEN = new_token
-                import meta_publisher
                 meta_publisher.META_ACCESS_TOKEN = new_token
             if new_gemini:
                 update_line("GEMINI_API_KEY", new_gemini)
                 os.environ["GEMINI_API_KEY"] = new_gemini
-                import config
                 config.GEMINI_API_KEY = new_gemini
-                import creative_brain
                 creative_brain.GEMINI_API_KEY = new_gemini
             if new_phone:
                 update_line("WHATSAPP_DEMO_PHONE", new_phone)
                 os.environ["WHATSAPP_DEMO_PHONE"] = new_phone
-                import config
                 config.WHATSAPP_DEMO_PHONE = new_phone
             if new_tg_token:
                 update_line("TELEGRAM_BOT_TOKEN", new_tg_token)
                 os.environ["TELEGRAM_BOT_TOKEN"] = new_tg_token
-                import config
                 config.TELEGRAM_BOT_TOKEN = new_tg_token
-                import telegram_notifier
                 telegram_notifier.TELEGRAM_BOT_TOKEN = new_tg_token
             if new_tg_chat:
                 update_line("TELEGRAM_CHAT_ID", new_tg_chat)
                 os.environ["TELEGRAM_CHAT_ID"] = new_tg_chat
-                import config
                 config.TELEGRAM_CHAT_ID = new_tg_chat
-                import telegram_notifier
                 telegram_notifier.TELEGRAM_CHAT_ID = new_tg_chat
             if new_studio_url:
                 update_line("STUDIO_PUBLIC_URL", new_studio_url)
                 os.environ["STUDIO_PUBLIC_URL"] = new_studio_url
-                import config
                 config.STUDIO_PUBLIC_URL = new_studio_url
 
             with open(ENV_PATH, "w", encoding="utf-8") as f:
