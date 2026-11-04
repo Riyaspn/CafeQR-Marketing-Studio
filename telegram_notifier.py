@@ -1,7 +1,10 @@
 import os
 import json
+import html
+import time
 import urllib.request
 import urllib.parse
+import urllib.error
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -64,6 +67,9 @@ def send_test_alert():
             if res_data.get("ok"):
                 return {"success": True, "message_id": res_data.get("result", {}).get("message_id")}
             return {"success": False, "error": res_data.get("description")}
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode("utf-8")
+        return {"success": False, "error": f"{e} - Detail: {err_body}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
 
@@ -88,75 +94,125 @@ def send_telegram_poster_alert(campaign, poster_path):
     audio_info = campaign.get("audio_profile", {})
     ig_sound = audio_info.get("trending_ig_tip", "Trending Commercial Beat")
 
-    # Format Telegram Message
+    # Safe HTML-escaping to prevent 400 Bad Request on raw symbols (<, >, &)
+    safe_badge = html.escape(str(badge))
+    safe_vertical = html.escape(str(vertical))
+    safe_headline = html.escape(str(headline))
+    # Telegram sendPhoto caption has a STRICT 1024-character maximum limit!
+    safe_caption_snippet = html.escape(str(caption)[:320].strip())
+    safe_sound = html.escape(str(ig_sound))
+
+    # Formatted Telegram Message (Kept strictly ~500 chars to never exceed 1024 limit)
     telegram_caption = (
         f"🎨 <b>NEW CAFE QR POSTER READY FOR REVIEW</b>\n\n"
-        f"<b>{badge}</b>\n"
-        f"📌 <b>Vertical:</b> {vertical}\n"
-        f"📢 <b>Headline:</b> {headline}\n\n"
-        f"📝 <b>Caption & Hashtags:</b>\n"
-        f"<blockquote>{caption[:700]}...</blockquote>\n\n"
-        f"🎵 <b>Recommended Trending Audio:</b>\n"
-        f"👉 <i>{ig_sound}</i> (Tap to copy in Studio)\n\n"
-        f"🚀 <b>Review & 1-Click Publish:</b>\n"
-        f"{studio_url}\n\n"
-        f"• Year 1: ₹2,498 | Year 2+ Renewal: ₹999/yr Forever | 0% Commission"
+        f"<b>{safe_badge}</b>\n"
+        f"📌 <b>Vertical:</b> {safe_vertical}\n"
+        f"📢 <b>Headline:</b> {safe_headline}\n\n"
+        f"📝 <b>Caption Snippet:</b>\n"
+        f"<i>\"{safe_caption_snippet}...\"</i>\n\n"
+        f"🎵 <b>Trending IG Sound:</b> {safe_sound}\n\n"
+        f"• Year 1: ₹2,498 | Year 2+ Renewal: ₹999/yr Forever"
     )
 
     url = f"https://api.telegram.org/bot{token}/sendPhoto"
-    
-    # Boundary for multipart upload
-    import time
-    boundary = "----WebKitFormBoundaryTG" + hex(int(time.time() * 1000))[2:]
-    body = bytearray()
-
-    fields = {
-        "chat_id": chat_id,
-        "caption": telegram_caption,
-        "parse_mode": "HTML"
-    }
-
-    # Add inline buttons
     inline_keyboard = {
         "inline_keyboard": [
-            [
-                {"text": "🌐 Open Web Studio to Approve", "url": studio_url}
-            ]
+            [{"text": "🌐 Open Web Studio to Approve", "url": studio_url}]
         ]
     }
-    fields["reply_markup"] = json.dumps(inline_keyboard)
 
-    for k, v in fields.items():
-        body.extend(f"--{boundary}\r\n".encode("utf-8"))
-        body.extend(f'Content-Disposition: form-data; name="{k}"\r\n\r\n'.encode("utf-8"))
-        body.extend(f"{v}\r\n".encode("utf-8"))
+    def _build_multipart_payload(caption_text, parse_mode="HTML"):
+        boundary = "----WebKitFormBoundaryTG" + hex(int(time.time() * 1000))[2:]
+        body = bytearray()
+        fields = {
+            "chat_id": chat_id,
+            "caption": caption_text,
+            "reply_markup": json.dumps(inline_keyboard)
+        }
+        if parse_mode:
+            fields["parse_mode"] = parse_mode
 
-    # Attach Photo
-    if os.path.exists(poster_path):
-        filename = os.path.basename(poster_path)
-        body.extend(f"--{boundary}\r\n".encode("utf-8"))
-        body.extend(f'Content-Disposition: form-data; name="photo"; filename="{filename}"\r\n'.encode("utf-8"))
-        body.extend(f"Content-Type: image/png\r\n\r\n".encode("utf-8"))
-        with open(poster_path, "rb") as f:
-            body.extend(f.read())
-        body.extend(b"\r\n")
+        for k, v in fields.items():
+            body.extend(f"--{boundary}\r\n".encode("utf-8"))
+            body.extend(f'Content-Disposition: form-data; name="{k}"\r\n\r\n'.encode("utf-8"))
+            body.extend(f"{v}\r\n".encode("utf-8"))
 
-    body.extend(f"--{boundary}--\r\n".encode("utf-8"))
+        if os.path.exists(poster_path):
+            filename = os.path.basename(poster_path)
+            body.extend(f"--{boundary}\r\n".encode("utf-8"))
+            body.extend(f'Content-Disposition: form-data; name="photo"; filename="{filename}"\r\n'.encode("utf-8"))
+            body.extend(f"Content-Type: image/png\r\n\r\n".encode("utf-8"))
+            with open(poster_path, "rb") as f:
+                body.extend(f.read())
+            body.extend(b"\r\n")
 
-    req = urllib.request.Request(
-        url,
-        data=body,
-        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"}
-    )
+        body.extend(f"--{boundary}--\r\n".encode("utf-8"))
+        headers = {"Content-Type": f"multipart/form-data; boundary={boundary}"}
+        return body, headers
 
+    # Attempt 1: Send Photo with HTML formatting
     try:
+        body, headers = _build_multipart_payload(telegram_caption, parse_mode="HTML")
+        req = urllib.request.Request(url, data=body, headers=headers)
         with urllib.request.urlopen(req, timeout=30) as res:
             res_data = json.loads(res.read().decode())
             if res_data.get("ok"):
                 print("📱 [TelegramNotifier] Alert with high-res poster preview dispatched to Telegram!")
                 return {"success": True, "message_id": res_data.get("result", {}).get("message_id")}
-            else:
-                return {"success": False, "error": res_data.get("description")}
+    except urllib.error.HTTPError as e:
+        err_body = ""
+        try:
+            err_body = e.read().decode("utf-8")
+        except Exception:
+            pass
+        print(f"⚠️ [TelegramNotifier] HTML sendPhoto failed: {e} - Detail: {err_body}. Retrying with plain text...")
+
+        # Attempt 2: Fallback to plain text caption (No parse_mode)
+        try:
+            plain_caption = (
+                f"🎨 NEW CAFE QR POSTER READY FOR REVIEW\n\n"
+                f"{badge}\n"
+                f"Vertical: {vertical}\n"
+                f"Headline: {headline}\n\n"
+                f"Caption: {caption[:300]}...\n\n"
+                f"🎵 Trending IG Sound: {ig_sound}\n\n"
+                f"Studio: {studio_url}\n"
+                f"Year 1: ₹2,498 | Year 2+ Renewal: ₹999/yr Forever"
+            )
+            body, headers = _build_multipart_payload(plain_caption, parse_mode=None)
+            req = urllib.request.Request(url, data=body, headers=headers)
+            with urllib.request.urlopen(req, timeout=30) as res:
+                res_data = json.loads(res.read().decode())
+                if res_data.get("ok"):
+                    print("📱 [TelegramNotifier] Plain text photo alert dispatched to Telegram!")
+                    return {"success": True, "message_id": res_data.get("result", {}).get("message_id")}
+        except Exception as retry_err:
+            print(f"⚠️ [TelegramNotifier] Plain text photo retry also failed: {retry_err}")
     except Exception as e:
-        print(f"⚠️ [TelegramNotifier] Error sending Telegram alert: {e}")
-        return {"success": False, "error": str(e)}
+        print(f"⚠️ [TelegramNotifier] Unexpected sendPhoto error: {e}")
+
+    # Attempt 3: If photo upload fails, send text alert with link so user NEVER misses an alert
+    try:
+        msg_url = f"https://api.telegram.org/bot{token}/sendMessage"
+        text_payload = json.dumps({
+            "chat_id": chat_id,
+            "text": (
+                f"🎨 <b>NEW CAFE QR POSTER READY FOR REVIEW</b>\n\n"
+                f"<b>{safe_badge}</b>\n"
+                f"📌 <b>Vertical:</b> {safe_vertical}\n"
+                f"📢 <b>Headline:</b> {safe_headline}\n\n"
+                f"🔗 <b>Open Studio to Review & Publish:</b>\n{studio_url}"
+            ),
+            "parse_mode": "HTML",
+            "reply_markup": inline_keyboard
+        }).encode("utf-8")
+        msg_req = urllib.request.Request(msg_url, data=text_payload, headers={"Content-Type": "application/json"})
+        with urllib.request.urlopen(msg_req, timeout=15) as res:
+            res_data = json.loads(res.read().decode())
+            if res_data.get("ok"):
+                print("📱 [TelegramNotifier] Text notification alert dispatched to Telegram!")
+                return {"success": True, "message_id": res_data.get("result", {}).get("message_id")}
+    except Exception as fallback_err:
+        print(f"⚠️ [TelegramNotifier] Text message fallback error: {fallback_err}")
+
+    return {"success": False, "error": "All Telegram alert channels failed"}
