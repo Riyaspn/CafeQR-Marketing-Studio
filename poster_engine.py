@@ -124,6 +124,16 @@ def render_poster(creative_data, width=1080, height=1350, filename=None):
     html_content = re.sub(r'(?:₹|Rs\.?|INR)?\s*9999\b(?:\s*/\s*(?:yr|year))?', '₹999/yr', html_content, flags=re.IGNORECASE)
     html_content = re.sub(r'(?:₹|Rs\.?|INR)?\s*9,999\b(?:\s*/\s*(?:yr|year))?', '₹999/yr', html_content, flags=re.IGNORECASE)
 
+    # Inject universal font fallback to guarantee ₹ symbol and emoji rendering on all platforms
+    font_fallback_css = """<style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;700;900&display=swap');
+    * { font-family: 'Inter', 'Noto Sans', 'Noto Color Emoji', 'Segoe UI Emoji', 'Apple Color Emoji', 'Liberation Sans', 'FreeSans', Arial, Helvetica, sans-serif !important; }
+    </style>"""
+    if "</head>" in html_content:
+        html_content = html_content.replace("</head>", font_fallback_css + "\n</head>")
+    elif "<body" in html_content:
+        html_content = font_fallback_css + "\n" + html_content
+
     if not filename:
         uid = uuid.uuid4().hex[:8]
         filename = f"poster_{template_name}_{uid}.png"
@@ -137,7 +147,7 @@ def render_poster(creative_data, width=1080, height=1350, filename=None):
         )
         page = browser.new_page(viewport={"width": width, "height": height})
         page.set_content(html_content, wait_until="load")
-        page.wait_for_timeout(250)  # Wait for Google Fonts & layout paint
+        page.wait_for_timeout(1500)  # Wait for Google Fonts, Noto fallbacks & layout paint
         page.screenshot(path=str(output_path), full_page=False)
         browser.close()
 

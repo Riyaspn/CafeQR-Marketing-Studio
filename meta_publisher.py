@@ -201,16 +201,25 @@ def publish_to_instagram(media_public_url, caption="", is_video=False):
         if not creation_id:
             return {"success": False, "error": "Failed to create Instagram container"}
 
-        # For videos, poll status until 'FINISHED'
-        if is_video:
-            for _ in range(12):
-                time.sleep(5)
-                status_url = f"{BASE_GRAPH_URL}/{creation_id}?fields=status_code&access_token={META_ACCESS_TOKEN}"
-                status_res = json.loads(urllib.request.urlopen(status_url).read().decode())
-                if status_res.get("status_code") == "FINISHED":
+        # Poll status until 'FINISHED' for BOTH photos and videos
+        # Instagram needs time to download and process images from external URLs
+        max_polls = 20 if is_video else 10
+        poll_interval = 5 if is_video else 3
+        for attempt in range(max_polls):
+            time.sleep(poll_interval)
+            status_url = f"{BASE_GRAPH_URL}/{creation_id}?fields=status_code&access_token={META_ACCESS_TOKEN}"
+            try:
+                status_res = json.loads(urllib.request.urlopen(status_url, timeout=10).read().decode())
+                status_code = status_res.get("status_code")
+                print(f"📸 [Instagram] Container {creation_id} status: {status_code} (poll {attempt+1}/{max_polls})")
+                if status_code == "FINISHED":
                     break
-                elif status_res.get("status_code") == "ERROR":
-                    return {"success": False, "error": "Instagram video transcoding failed"}
+                elif status_code == "ERROR":
+                    return {"success": False, "platform": "Instagram Feed", "error": "Instagram media processing failed"}
+            except Exception as poll_err:
+                print(f"⚠️ [Instagram] Poll error: {poll_err}")
+        else:
+            return {"success": False, "platform": "Instagram Feed", "error": f"Instagram media not ready after {max_polls * poll_interval}s"}
 
         # Step 2: Publish Media Container
         publish_url = f"{BASE_GRAPH_URL}/{INSTAGRAM_ACCOUNT_ID}/media_publish"
@@ -223,13 +232,13 @@ def publish_to_instagram(media_public_url, caption="", is_video=False):
             pub_data = json.loads(pub_res.read().decode())
             return {
                 "success": True,
-                "platform": "Instagram",
+                "platform": "Instagram Feed",
                 "post_id": pub_data.get("id")
             }
     except urllib.error.HTTPError as e:
-        return {"success": False, "platform": "Instagram", "error": e.read().decode()}
+        return {"success": False, "platform": "Instagram Feed", "error": e.read().decode()}
     except Exception as e:
-        return {"success": False, "platform": "Instagram", "error": str(e)}
+        return {"success": False, "platform": "Instagram Feed", "error": str(e)}
 
 def publish_to_instagram_story(media_public_url, is_video=False):
     """
@@ -263,16 +272,24 @@ def publish_to_instagram_story(media_public_url, is_video=False):
         if not creation_id:
             return {"success": False, "error": "Failed to create Instagram Story container"}
 
-        # For video stories, poll status until 'FINISHED'
-        if is_video:
-            for _ in range(12):
-                time.sleep(5)
-                status_url = f"{BASE_GRAPH_URL}/{creation_id}?fields=status_code&access_token={META_ACCESS_TOKEN}"
-                status_res = json.loads(urllib.request.urlopen(status_url).read().decode())
-                if status_res.get("status_code") == "FINISHED":
+        # Poll status until 'FINISHED' for both photos and videos
+        max_polls = 20 if is_video else 10
+        poll_interval = 5 if is_video else 3
+        for attempt in range(max_polls):
+            time.sleep(poll_interval)
+            status_url = f"{BASE_GRAPH_URL}/{creation_id}?fields=status_code&access_token={META_ACCESS_TOKEN}"
+            try:
+                status_res = json.loads(urllib.request.urlopen(status_url, timeout=10).read().decode())
+                status_code = status_res.get("status_code")
+                print(f"📸 [Instagram Story] Container {creation_id} status: {status_code} (poll {attempt+1}/{max_polls})")
+                if status_code == "FINISHED":
                     break
-                elif status_res.get("status_code") == "ERROR":
-                    return {"success": False, "error": "Instagram Story video transcoding failed"}
+                elif status_code == "ERROR":
+                    return {"success": False, "platform": "Instagram Story", "error": "Instagram Story media processing failed"}
+            except Exception as poll_err:
+                print(f"⚠️ [Instagram Story] Poll error: {poll_err}")
+        else:
+            return {"success": False, "platform": "Instagram Story", "error": f"Instagram Story media not ready after {max_polls * poll_interval}s"}
 
         # Step 2: Publish Story Container
         publish_url = f"{BASE_GRAPH_URL}/{INSTAGRAM_ACCOUNT_ID}/media_publish"
