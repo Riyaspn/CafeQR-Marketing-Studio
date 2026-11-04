@@ -108,6 +108,7 @@ def run_autonomous_poster_cycle():
         poster_filename = f"auto_{int(time.time())}_{campaign.get('target_vertical', 'post').lower()[:12].replace(' ', '_')}.png"
         poster_path = poster_engine.render_poster(campaign, filename=poster_filename)
         campaign["poster_path"] = poster_path
+        campaign["poster_file"] = poster_path
         campaign["poster_url"] = f"/drafts/{poster_filename}"
 
         # 3. Save to Studio Drafts Gallery

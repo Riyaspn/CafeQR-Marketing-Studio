@@ -78,10 +78,10 @@ def check_token_health(token=None):
             "message": str(e)
         }
 
-def publish_to_facebook_page(image_path=None, video_path=None, caption=""):
+def publish_to_facebook_page(image_path=None, video_path=None, caption="", image_url=None):
     """
-    Publishes a photo or video directly to the Facebook Page using multipart upload.
-    Works directly from local filesystem without needing public URL staging!
+    Publishes a photo or video directly to the Facebook Page using multipart upload,
+    or falls back to public URL ingest if image_path is not on local disk.
     """
     if not META_ACCESS_TOKEN:
         return {"success": False, "error": "Missing Meta Access Token"}
@@ -101,6 +101,29 @@ def publish_to_facebook_page(image_path=None, video_path=None, caption=""):
         field_name = "source"
         mime_type = "image/png"
         extra_fields = {"caption": caption, "access_token": META_ACCESS_TOKEN}
+    elif image_url:
+        url = f"{BASE_GRAPH_URL}/{CAFE_QR_PAGE_ID}/photos"
+        params = urllib.parse.urlencode({
+            "url": image_url,
+            "caption": caption,
+            "access_token": META_ACCESS_TOKEN
+        }).encode("utf-8")
+        req = urllib.request.Request(url, data=params, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
+        try:
+            with urllib.request.urlopen(req, timeout=30) as res:
+                res_data = json.loads(res.read().decode())
+                post_id = res_data.get("id") or res_data.get("post_id")
+                return {
+                    "success": True,
+                    "platform": "Facebook Page",
+                    "post_id": post_id,
+                    "permalink": f"https://facebook.com/{post_id}" if post_id else ""
+                }
+        except urllib.error.HTTPError as e:
+            err = e.read().decode()
+            return {"success": False, "platform": "Facebook Page", "error": err}
+        except Exception as e:
+            return {"success": False, "platform": "Facebook Page", "error": str(e)}
     else:
         return {"success": False, "error": "No media file provided or file does not exist"}
 

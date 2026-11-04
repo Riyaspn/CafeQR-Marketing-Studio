@@ -4,7 +4,7 @@ import json
 import mimetypes
 import threading
 import time
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 
@@ -268,50 +268,69 @@ class StudioHandler(SimpleHTTPRequestHandler):
 
         # 4. API: 1-Click Publish to Meta (Facebook, Instagram Feed & Stories)
         elif path == "/api/publish":
-            image_path = body.get("image_path")
-            video_path = body.get("video_path")
+            image_path = body.get("image_path") or body.get("poster_path") or body.get("poster_file")
+            video_path = body.get("video_path") or body.get("reel_path") or body.get("reel_file")
             caption = body.get("caption", "")
             target_fb = body.get("facebook", True)
             target_ig = body.get("instagram", False)
             target_story = body.get("story", False)
+            public_media_url = body.get("public_media_url", "").strip()
+
+            # If image_path not provided or doesn't exist, resolve from public_media_url
+            if (not image_path or not os.path.exists(image_path)) and public_media_url:
+                try:
+                    filename = os.path.basename(urlparse(public_media_url).path)
+                    candidate = DRAFTS_DIR / filename
+                    if candidate.exists():
+                        image_path = str(candidate)
+                except Exception as ex:
+                    print(f"⚠️ [Publish] Error resolving local path from public_media_url: {ex}")
 
             results = []
 
             # Post to Facebook Page
             if target_fb:
-                fb_res = meta_publisher.publish_to_facebook_page(
-                    image_path=image_path,
-                    video_path=video_path,
-                    caption=caption
-                )
-                results.append(fb_res)
+                try:
+                    fb_res = meta_publisher.publish_to_facebook_page(
+                        image_path=image_path,
+                        video_path=video_path,
+                        caption=caption,
+                        image_url=public_media_url
+                    )
+                    results.append(fb_res)
+                except Exception as fb_err:
+                    results.append({"platform": "Facebook Page", "success": False, "error": str(fb_err)})
 
             # Post to Instagram Feed / Reel
             if target_ig:
-                ig_public_url = body.get("public_media_url", "")
-                if ig_public_url:
-                    ig_res = meta_publisher.publish_to_instagram(
-                        media_public_url=ig_public_url,
-                        caption=caption,
-                        is_video=bool(video_path)
-                    )
-                    results.append(ig_res)
+                if public_media_url:
+                    try:
+                        ig_res = meta_publisher.publish_to_instagram(
+                            media_public_url=public_media_url,
+                            caption=caption,
+                            is_video=bool(video_path)
+                        )
+                        results.append(ig_res)
+                    except Exception as ig_err:
+                        results.append({"platform": "Instagram Feed", "success": False, "error": str(ig_err)})
                 else:
                     results.append({
                         "platform": "Instagram Feed",
                         "success": False,
-                        "error": "Instagram requires a public HTTPS URL. Facebook direct upload succeeded."
+                        "error": "Instagram requires a public HTTPS URL."
                     })
 
             # Post to Instagram Story
             if target_story:
-                story_public_url = body.get("public_media_url", "")
-                if story_public_url:
-                    story_res = meta_publisher.publish_to_instagram_story(
-                        media_public_url=story_public_url,
-                        is_video=bool(video_path)
-                    )
-                    results.append(story_res)
+                if public_media_url:
+                    try:
+                        story_res = meta_publisher.publish_to_instagram_story(
+                            media_public_url=public_media_url,
+                            is_video=bool(video_path)
+                        )
+                        results.append(story_res)
+                    except Exception as story_err:
+                        results.append({"platform": "Instagram Story", "success": False, "error": str(story_err)})
                 else:
                     results.append({
                         "platform": "Instagram Story",
@@ -336,7 +355,7 @@ class StudioHandler(SimpleHTTPRequestHandler):
                         try:
                             with open(saved_file, "r", encoding="utf-8") as f:
                                 saved = json.load(f)
-                            saved = [d for d in saved if d.get("poster_path") != image_path]
+                            saved = [d for d in saved if d.get("poster_path") != image_path and (not public_media_url or d.get("poster_url") != public_media_url)]
                             with open(saved_file, "w", encoding="utf-8") as f:
                                 json.dump(saved, f, indent=2)
                         except Exception:
@@ -499,7 +518,7 @@ class StudioHandler(SimpleHTTPRequestHandler):
 
 def run_server():
     server_address = ('', PORT)
-    httpd = HTTPServer(server_address, StudioHandler)
+    httpd = ThreadingHTTPServer(server_address, StudioHandler)
     print(f"\n=======================================================")
     print(f" 🚀 CAFE QR MARKETING STUDIO RUNNING")
     print(f" 🌐 URL: http://localhost:{PORT}")

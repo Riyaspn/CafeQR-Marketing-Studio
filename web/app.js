@@ -422,13 +422,13 @@ async function publishApprovedCampaign() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        image_path: currentCampaign.poster_file,
-        video_path: currentCampaign.reel_file,
+        image_path: currentCampaign ? (currentCampaign.poster_file || currentCampaign.poster_path) : null,
+        video_path: currentCampaign ? (currentCampaign.reel_file || currentCampaign.reel_path) : null,
         caption: caption,
         facebook: pubFb,
         instagram: pubIg,
         story: pubStory,
-        public_media_url: currentCampaign.poster_url ? (window.location.origin + currentCampaign.poster_url) : ''
+        public_media_url: (currentCampaign && currentCampaign.poster_url) ? (window.location.origin + currentCampaign.poster_url) : ''
       })
     });
     const data = await res.json();
