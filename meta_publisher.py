@@ -9,6 +9,7 @@ from config import (
     META_ACCESS_TOKEN,
     CAFE_QR_PAGE_ID,
     INSTAGRAM_ACCOUNT_ID,
+    THREADS_ACCESS_TOKEN,
     THREADS_USER_ID,
     META_AD_ACCOUNT_ID,
     BRAND_URL
@@ -369,16 +370,17 @@ def publish_to_threads(media_public_url, caption="", is_video=False):
       3. Poll until container status is FINISHED
       4. Publish container: POST https://graph.threads.net/v1.0/{user_id}/threads_publish
     """
-    if not META_ACCESS_TOKEN:
-        return {"success": False, "error": "Missing Meta Access Token"}
+    token = THREADS_ACCESS_TOKEN or META_ACCESS_TOKEN
+    if not token:
+        return {"success": False, "error": "Missing Threads Access Token"}
 
-    user_id = THREADS_USER_ID
+    user_id = THREADS_USER_ID or "39929525056691523"
     threads_base = "https://graph.threads.net/v1.0"
 
     # Attempt to auto-resolve Threads user ID if not explicitly configured
     if not user_id:
         try:
-            me_url = f"{threads_base}/me?fields=id,username&access_token={META_ACCESS_TOKEN}"
+            me_url = f"{threads_base}/me?fields=id,username&access_token={token}"
             me_req = urllib.request.Request(me_url, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
             with urllib.request.urlopen(me_req, timeout=10) as me_res:
                 me_data = json.loads(me_res.read().decode())
@@ -390,13 +392,13 @@ def publish_to_threads(media_public_url, caption="", is_video=False):
         return {
             "success": False,
             "platform": "Threads Profile",
-            "error": "No Threads User ID configured. Set THREADS_USER_ID in .env or grant 'threads_basic' & 'threads_content_publish' to your Meta token."
+            "error": "No Threads User ID configured. Set THREADS_USER_ID in .env or Render."
         }
 
     # Step 1: Create Threads media container
     container_url = f"{threads_base}/{user_id}/threads"
     params = {
-        "access_token": META_ACCESS_TOKEN,
+        "access_token": token,
         "text": caption
     }
     if is_video:
@@ -422,7 +424,7 @@ def publish_to_threads(media_public_url, caption="", is_video=False):
         poll_interval = 5 if is_video else 3
         for attempt in range(max_polls):
             time.sleep(poll_interval)
-            status_url = f"{threads_base}/{creation_id}?fields=status,error_message&access_token={META_ACCESS_TOKEN}"
+            status_url = f"{threads_base}/{creation_id}?fields=status,error_message&access_token={token}"
             try:
                 status_res = json.loads(urllib.request.urlopen(status_url, timeout=10).read().decode())
                 status = status_res.get("status")
@@ -441,7 +443,7 @@ def publish_to_threads(media_public_url, caption="", is_video=False):
         publish_url = f"{threads_base}/{user_id}/threads_publish"
         pub_params = urllib.parse.urlencode({
             "creation_id": creation_id,
-            "access_token": META_ACCESS_TOKEN
+            "access_token": token
         }).encode("utf-8")
         pub_req = urllib.request.Request(publish_url, data=pub_params, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
         with urllib.request.urlopen(pub_req, timeout=30) as pub_res:
