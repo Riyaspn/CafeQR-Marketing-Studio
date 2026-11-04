@@ -309,7 +309,7 @@ Craft a complete viral direct-response campaign tailored to this awareness stage
   "target_vertical": "{vertical_hint}",
   "awareness_stage": "{awareness_stage}",
   "strategic_angle": "{recommended_angle}",
-  "recommended_visual_archetype": "Forensic Thermal Receipt | WhatsApp Digital Dialogue | 3-Step Velocity Flow | Split Comparison Matrix",
+  "recommended_visual_archetype": "Forensic Thermal Receipt (if commission/fee cuts) | WhatsApp Digital Dialogue (if car wash job cards or direct customer chat) | 3-Step Velocity Flow (if speed/thermal printing) | Split Comparison Matrix (if boycotts/outrage) | Transparent Sachet Pricing Grid (if POS pricing/lock-in) | Barcode Stock Audit (if bakeries/boutiques)",
   "headline": "Bold punchy headline in ALL CAPS, max 7 words with news or specific rupee figures (Ogilvy 80/20 rule)",
   "subtext": "Sharp 1-line sub-hook highlighting the merchant pain point with exact numbers",
   "badge": "Short badge tag (e.g. 🚨 F&B PROFIT ALERT, 🥐 BAKERY RUSH ALERT, 🚗 CAR WASH DETECTIVE, or ⚡ HARDWARE FLEX)",
@@ -430,38 +430,91 @@ def generate_poster_html(campaign_data, topic_item=None):
     else:
         styled_headline = f"<span>{headline}</span>"
 
-    # Dynamic Vertical Color Palette & Branding
-    vert_lower = vertical.lower()
-    if any(k in vert_lower for k in ["bakery", "sweet", "confectionery"]):
-        theme_glow_1 = "rgba(245, 158, 11, 0.22)"
-        theme_glow_2 = "rgba(217, 119, 6, 0.15)"
-        theme_accent = "#F59E0B"
-        theme_accent_gradient = "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)"
-        theme_badge_bg = "rgba(245, 158, 11, 0.15)"
-        theme_badge_border = "rgba(245, 158, 11, 0.45)"
-        theme_badge_color = "#F59E0B"
+    # 1. Dynamic 80/20 Thematic Backdrops & Brand Palettes
+    category = topic_item.get("category", "") or campaign_data.get("category", "")
+    category_upper = str(category).upper()
+    title_lower = str(topic_item.get("title", "")).lower()
+    vert_lower = str(vertical).lower()
+
+    if any(k in category_upper or k in title_lower for k in ["BOYCOTT", "PROTEST", "OUTRAGE", "HIKE", "DISPUTE", "STRIKE"]):
+        bg_mode = "crimson_alert"
+        theme_bg = "#0D090B"
+        theme_glow_1 = "rgba(239, 68, 68, 0.28)"
+        theme_glow_2 = "rgba(245, 158, 11, 0.18)"
+        theme_accent = "#EF4444"
+        theme_accent_gradient = "linear-gradient(135deg, #EF4444 0%, #DC2626 100%)"
+        theme_badge_bg = "rgba(239, 68, 68, 0.18)"
+        theme_badge_border = "rgba(239, 68, 68, 0.55)"
+        theme_badge_color = "#F87171"
     elif any(k in vert_lower for k in ["car wash", "auto", "garage", "detailing"]):
-        theme_glow_1 = "rgba(6, 182, 212, 0.22)"
-        theme_glow_2 = "rgba(59, 130, 246, 0.15)"
+        bg_mode = "cyan_auto"
+        theme_bg = "#070E1A"
+        theme_glow_1 = "rgba(6, 182, 212, 0.26)"
+        theme_glow_2 = "rgba(37, 99, 235, 0.18)"
         theme_accent = "#06B6D4"
         theme_accent_gradient = "linear-gradient(135deg, #06B6D4 0%, #0284C7 100%)"
-        theme_badge_bg = "rgba(6, 182, 212, 0.15)"
-        theme_badge_border = "rgba(6, 182, 212, 0.45)"
-        theme_badge_color = "#06B6D4"
+        theme_badge_bg = "rgba(6, 182, 212, 0.16)"
+        theme_badge_border = "rgba(6, 182, 212, 0.5)"
+        theme_badge_color = "#38BDF8"
+    elif any(k in vert_lower for k in ["bakery", "sweet", "confectionery", "mithai"]):
+        bg_mode = "bakery_gold"
+        theme_bg = "#100B06"
+        theme_glow_1 = "rgba(245, 158, 11, 0.26)"
+        theme_glow_2 = "rgba(217, 119, 6, 0.18)"
+        theme_accent = "#F59E0B"
+        theme_accent_gradient = "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)"
+        theme_badge_bg = "rgba(245, 158, 11, 0.16)"
+        theme_badge_border = "rgba(245, 158, 11, 0.5)"
+        theme_badge_color = "#FBBF24"
     elif any(k in vert_lower for k in ["boutique", "apparel", "retail", "fashion", "textile"]):
-        theme_glow_1 = "rgba(244, 63, 94, 0.22)"
-        theme_glow_2 = "rgba(251, 191, 36, 0.14)"
+        bg_mode = "boutique_rose"
+        theme_bg = "#110813"
+        theme_glow_1 = "rgba(244, 63, 94, 0.26)"
+        theme_glow_2 = "rgba(168, 85, 247, 0.18)"
         theme_accent = "#F43F5E"
         theme_accent_gradient = "linear-gradient(135deg, #F43F5E 0%, #E11D48 100%)"
-        theme_badge_bg = "rgba(244, 63, 94, 0.15)"
-        theme_badge_border = "rgba(244, 63, 94, 0.45)"
-        theme_badge_color = "#F43F5E"
-    else:
-        theme_glow_1 = "rgba(255, 122, 0, 0.20)"
-        theme_glow_2 = "rgba(16, 185, 129, 0.12)"
+        theme_badge_bg = "rgba(244, 63, 94, 0.16)"
+        theme_badge_border = "rgba(244, 63, 94, 0.5)"
+        theme_badge_color = "#FB7185"
+    elif any(k in category_upper or k in title_lower for k in ["POS_MONOPOLY", "PETPOOJA", "LOCK_IN", "UPFRONT"]):
+        bg_mode = "titanium_slate"
+        theme_bg = "#080C16"
+        theme_glow_1 = "rgba(99, 102, 241, 0.25)"
+        theme_glow_2 = "rgba(16, 185, 129, 0.18)"
+        theme_accent = "#6366F1"
+        theme_accent_gradient = "linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)"
+        theme_badge_bg = "rgba(99, 102, 241, 0.16)"
+        theme_badge_border = "rgba(99, 102, 241, 0.5)"
+        theme_badge_color = "#818CF8"
+    elif any(k in category_upper or k in title_lower for k in ["SPEED", "THERMAL", "PRINTER", "HARDWARE", "KOT"]):
+        bg_mode = "kinetic_emerald"
+        theme_bg = "#06100B"
+        theme_glow_1 = "rgba(16, 185, 129, 0.28)"
+        theme_glow_2 = "rgba(6, 182, 212, 0.18)"
+        theme_accent = "#10B981"
+        theme_accent_gradient = "linear-gradient(135deg, #10B981 0%, #059669 100%)"
+        theme_badge_bg = "rgba(16, 185, 129, 0.16)"
+        theme_badge_border = "rgba(16, 185, 129, 0.5)"
+        theme_badge_color = "#34D399"
+    elif any(k in vert_lower for k in ["restaurant", "cafe", "cloud kitchen", "qsr", "dine"]):
+        # Warm Cafe Photo Interior with Frosted Glassmorphism
+        bg_mode = "photo_glass"
+        theme_bg = "#0A0D14"
+        theme_glow_1 = "rgba(255, 122, 0, 0.24)"
+        theme_glow_2 = "rgba(16, 185, 129, 0.16)"
         theme_accent = "#FF7A00"
-        theme_accent_gradient = "linear-gradient(135deg, #FF7A00 0%, #FF5500 100%)"
-        theme_badge_bg = "rgba(255, 122, 0, 0.15)"
+        theme_accent_gradient = "linear-gradient(135deg, #FF7A00 0%, #E66E00 100%)"
+        theme_badge_bg = "rgba(255, 122, 0, 0.16)"
+        theme_badge_border = "rgba(255, 122, 0, 0.5)"
+        theme_badge_color = "#FF9933"
+    else:
+        bg_mode = "obsidian_slate"
+        theme_bg = "#080C14"
+        theme_glow_1 = "rgba(255, 122, 0, 0.20)"
+        theme_glow_2 = "rgba(16, 185, 129, 0.14)"
+        theme_accent = "#FF7A00"
+        theme_accent_gradient = "linear-gradient(135deg, #FF7A00 0%, #E66E00 100%)"
+        theme_badge_bg = "rgba(255, 122, 0, 0.16)"
         theme_badge_border = "rgba(255, 122, 0, 0.45)"
         theme_badge_color = "#FF7A00"
 
@@ -472,16 +525,20 @@ def generate_poster_html(campaign_data, topic_item=None):
         or ""
     )
 
-    if "receipt" in recommended_archetype.lower():
-        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 1 (Forensic Thermal Receipt: <div class=\"receipt-container\">). Do NOT generate a comparison grid."
-    elif any(k in recommended_archetype.lower() for k in ["chat", "whatsapp", "dialogue", "token"]):
-        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 2 (WhatsApp Business Notification / Job Card: <div class=\"chat-container\">). Do NOT generate a comparison grid."
-    elif any(k in recommended_archetype.lower() for k in ["flow", "step", "speed", "velocity", "benchmark"]):
-        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 3 (3-Step Velocity Flow: <div class=\"flow-container\">). Do NOT generate a comparison grid."
-    elif any(k in recommended_archetype.lower() for k in ["price", "sachet", "pricing"]):
-        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 5 (Transparent Sachet Pricing Grid: <div class=\"pricing-grid-card\">). Do NOT generate a comparison grid."
+    if any(k in vert_lower for k in ["car wash", "auto", "garage", "detailing"]):
+        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 2 (WhatsApp Business Notification / Job Card: <div class=\"chat-container\">) with vehicle model and status."
+    elif any(k in vert_lower for k in ["bakery", "sweet", "boutique", "apparel", "retail"]):
+        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 7 (Barcode Scanning & Stock/Batch Audit: <div class=\"barcode-card\">) or ARCHETYPE 2 (WhatsApp Order Confirmation)."
+    elif any(k in category_upper or k in title_lower for k in ["POS_MONOPOLY", "PETPOOJA", "LOCK_IN", "UPFRONT"]):
+        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 6 (Legacy POS Contract Audit: <div class=\"contract-card\">) comparing ₹15,000–₹30,000 upfront with Cafe QR Year 1 ₹2,498 / Year 2 ₹999/yr."
+    elif any(k in category_upper or k in title_lower for k in ["SPEED", "THERMAL", "PRINTER", "HARDWARE", "KOT"]):
+        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 3 (3-Step Velocity Flow: <div class=\"flow-container\">)."
+    elif any(k in category_upper or k in title_lower for k in ["BOYCOTT", "PROTEST", "OUTRAGE", "STRIKE"]):
+        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 4 (Split Contrast Matrix: <div class=\"comparison-grid\">) showing Them (Red TRAP) vs Cafe QR (Green PROFIT)."
+    elif "receipt" in recommended_archetype.lower() or "commission" in category_upper:
+        archetype_instruction = "MANDATORY: You MUST generate ARCHETYPE 1 (Forensic Thermal Receipt: <div class=\"receipt-container\">) using story-specific numbers."
     else:
-        archetype_instruction = "Select the single archetype that creates the most powerful visceral impact."
+        archetype_instruction = "Select the single archetype (Receipt, WhatsApp Chat, Velocity Flow, Split Matrix, or Contract Audit) that creates the most visceral visual contrast."
 
     centerpiece_html = None
     art_prompt = f"""
@@ -498,20 +555,19 @@ CAFE QR ADVANTAGE ({us_label}): {json.dumps(us_points)}
 AVAILABLE ARCHETYPES:
 
 ARCHETYPE 1: "receipt-container" (Forensic Thermal Receipt)
-- Use for: Commission cuts (-28%), hidden aggregator fees, settlement math, margin bleed.
-- Clean white paper receipt with dashed lines, gross sales, deductions, trap payout vs Cafe QR 100% direct UPI payout.
+- Use for: Commission cuts (-28%), hidden aggregator fees, settlement math.
 Example skeleton:
 <div class="receipt-container">
   <div class="receipt-header">
     <div class="receipt-title">FORENSIC SETTLEMENT AUDIT</div>
-    <div class="receipt-subtitle">REAL DEDUCTIONS PER ₹1,000 BILL</div>
+    <div class="receipt-subtitle">{vertical.upper()} REAL MARGIN DEDUCTIONS</div>
   </div>
-  <div class="receipt-line"><span>Gross Order Total</span><span>₹1,000</span></div>
-  <div class="receipt-line"><span class="receipt-deduction">Platform Commission (-28%)</span><span class="receipt-deduction">-₹280</span></div>
-  <div class="receipt-line"><span class="receipt-deduction">Tech & Mandatory Ad Levy</span><span class="receipt-deduction">-₹140</span></div>
+  <div class="receipt-line"><span>Gross Customer Order</span><span>₹1,000</span></div>
+  <div class="receipt-line"><span class="receipt-deduction">Platform Commission (25-30%)</span><span class="receipt-deduction">-₹280</span></div>
+  <div class="receipt-line"><span class="receipt-deduction">Operational / Tech Levy</span><span class="receipt-deduction">-₹120</span></div>
   <div class="receipt-payout-trap">
     <span>THEIR NET PAYOUT:</span>
-    <span>₹580 (LOST ₹420)</span>
+    <span>₹600 (LOST ₹400)</span>
   </div>
   <div class="receipt-payout-cafeqr">
     <span>CAFE QR DIRECT UPI:</span>
@@ -520,12 +576,8 @@ Example skeleton:
 </div>
 
 ARCHETYPE 2: "chat-container" (WhatsApp Business Notification / Job Card)
-- Use for: Direct customer ordering, table QR, car wash job cards, boutique billing, appointment booking.
-- HUMANIFIED DIALOGUE: This must look like a REAL, authentic WhatsApp message between the local business and their customer!
-- STRICT RULE: NEVER put software prices (₹2,498 or ₹999) inside customer chat bubbles! Software pricing belongs only in the bottom bar.
-- Tailor the chat completely to {vertical}:
-  * If Car Wash: Job card with Vehicle model, service name, pickup ready alert, and UPI payment link.
-  * If Bakery/Cafe: Order confirmation with item names, ready status, and UPI link.
+- Use for: Car wash job cards, table QR ordering, boutique/bakery customer alerts.
+- HUMANIFIED DIALOGUE: Real WhatsApp messages between business and customer. NO software pricing in chat!
 Example skeleton:
 <div class="chat-container">
   <div class="chat-header">
@@ -553,72 +605,16 @@ Example skeleton:
 </div>
 
 ARCHETYPE 3: "flow-container" (3-Step Velocity / Hardware Benchmark Flow)
-- Use for: Thermal print speed (0.8s), existing hardware compatibility, barcode scanning, zero app friction.
-- 3 horizontal connected cards.
-Example skeleton:
-<div class="flow-container">
-  <div class="flow-step-card">
-    <div class="flow-step-badge" style="background: rgba(255,255,255,0.1); color: #CBD5E1;">STEP 1</div>
-    <div class="flow-step-title">Scan Table QR / Barcode</div>
-    <div class="flow-step-desc">Zero app download required. Instant responsive menu.</div>
-    <div class="flow-step-metric" style="color: #38BDF8;">⚡ ZERO FRICTION</div>
-  </div>
-  <div class="flow-step-card" style="border-color: {theme_accent};">
-    <div class="flow-step-badge" style="background: {theme_badge_bg}; color: {theme_accent};">STEP 2</div>
-    <div class="flow-step-title">0.8s Thermal Print</div>
-    <div class="flow-step-desc">Auto-ejected on your existing counter printer.</div>
-    <div class="flow-step-metric" style="color: {theme_accent};">⚡ SUB-SECOND</div>
-  </div>
-  <div class="flow-step-card" style="border-color: #10B981;">
-    <div class="flow-step-badge" style="background: rgba(16,185,129,0.15); color: #10B981;">STEP 3</div>
-    <div class="flow-step-title">0% Direct UPI Payout</div>
-    <div class="flow-step-desc">Funds land directly in your merchant bank account.</div>
-    <div class="flow-step-metric" style="color: #10B981;">💰 100% PROFIT</div>
-  </div>
-</div>
+- 3 connected step cards showing sub-second speed & direct UPI.
 
 ARCHETYPE 4: "comparison-grid" (Split Contrast Matrix)
-- Use for: Direct head-to-head comparison between legacy traps and Cafe QR.
-Example skeleton:
-<div class="comparison-grid">
-  <div class="card-them">
-    <div class="card-title them-title">
-      <span>{them_label}</span>
-      <span style="font-size: 14px; background: rgba(239,68,68,0.25); color: #EF4444; padding: 4px 10px; border-radius: 8px; font-weight: 800;">TRAP</span>
-    </div>
-    <div class="point-item"><span class="icon-cross">✕</span><span>Point 1</span></div>
-  </div>
-  <div class="card-us">
-    <div class="card-title us-title">
-      <span>{us_label}</span>
-      <span style="font-size: 14px; background: rgba(16,185,129,0.25); color: #10B981; padding: 4px 10px; border-radius: 8px; font-weight: 800;">PROFIT</span>
-    </div>
-    <div class="point-item"><span class="icon-check">✓</span><span>Point 1</span></div>
-  </div>
-</div>
+- Split Red TRAP vs Green PROFIT cards.
 
-ARCHETYPE 5: "pricing-grid-card" (Transparent Sachet Pricing Grid)
-- Use for: Sachet disruption, transparent renewal promise, modular bolt-ons.
-Example skeleton:
-<div class="pricing-grid-card">
-  <div class="pricing-grid-hero">
-    <div>
-      <span class="pricing-hero-badge">⚡ Transparent Sachet Model</span>
-      <div class="pricing-hero-price">₹2,498 Year 1</div>
-      <div class="pricing-hero-sub">Setup Included • Year 2+ Renewal ₹999/yr Forever</div>
-    </div>
-    <div style="text-align: right;">
-      <div style="font-size: 38px; font-weight: 900; color: #10B981; font-family: 'Outfit', sans-serif;">0%</div>
-      <div style="font-size: 14px; color: #94A3B8; font-weight: 700;">Direct UPI</div>
-    </div>
-  </div>
-  <div class="sachet-addons-list">
-    <div class="sachet-addon-pill"><span class="addon-name">Table QR & Digital Menu</span><span class="addon-price">INCLUDED</span></div>
-    <div class="sachet-addon-pill"><span class="addon-name">0.8s Thermal Bill Printing</span><span class="addon-price">INCLUDED</span></div>
-    <div class="sachet-addon-pill"><span class="addon-name">KOT Kitchen Tickets</span><span class="addon-price">₹499/yr</span></div>
-    <div class="sachet-addon-pill"><span class="addon-name">Customer CRM & Loyalty</span><span class="addon-price">₹999/yr</span></div>
-  </div>
-</div>
+ARCHETYPE 6: "contract-card" (Legacy POS Contract Audit)
+- Compares ₹15,000–₹30,000 upfront lock-in with Cafe QR Year 1 ₹2,498 / Year 2 ₹999/yr forever.
+
+ARCHETYPE 7: "barcode-card" (Barcode & Batch Expiry Audit)
+- Barcode visual + SKU verification for bakeries and boutiques.
 
 CRITICAL CONTRACT:
 Tailor the text, figures, and points specifically to {vertical} and the topic.
@@ -754,6 +750,58 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
       </div>
     </div>
 """
+        elif any(k in arch_lower for k in ["contract", "pos", "petpooja", "lock"]) or any(k in category_upper for k in ["POS_MONOPOLY"]):
+            centerpiece_html = f"""
+    <div class="contract-card">
+      <div class="contract-header">
+        <div class="contract-title">RETAIL &amp; POS CONTRACT AUDIT</div>
+        <div class="contract-sub">ANNUAL SOFTWARE EXPOSURE COMPARISON</div>
+      </div>
+      <div class="contract-row trap">
+        <span>Legacy Upfront Lock-in (Petpooja / Posist)</span>
+        <strong>₹15,000 – ₹30,000</strong>
+      </div>
+      <div class="contract-row trap">
+        <span>Forced Yearly Renewal Escalation</span>
+        <strong>₹8,000 – ₹12,000/yr</strong>
+      </div>
+      <div class="contract-row profit">
+        <span>CAFE QR YEAR 1 BASE PLAN (Setup Included)</span>
+        <strong>₹2,498</strong>
+      </div>
+      <div class="contract-row profit">
+        <span>CAFE QR YEAR 2+ RENEWAL (Forever)</span>
+        <strong>₹999/yr</strong>
+      </div>
+    </div>
+"""
+        elif any(k in arch_lower for k in ["barcode", "expiry", "stock"]) or any(k in vert_lower for k in ["bakery", "sweet", "boutique", "apparel", "retail"]):
+            centerpiece_html = f"""
+    <div class="barcode-card">
+      <div class="barcode-header">
+        <div class="barcode-title">BARCODE SCAN &amp; BATCH EXPIRY AUDIT</div>
+        <div class="barcode-sub">{vertical.upper()} STOCK INTEGRITY REPORT</div>
+      </div>
+      <div class="barcode-visual">
+        <div class="barcode-lines">||| | |||| || | ||||| ||| | |||</div>
+        <div class="barcode-sku">SKU #89042-BATCH-04 • VERIFIED</div>
+      </div>
+      <div class="barcode-metrics">
+        <div class="barcode-metric-item">
+          <span>Checkout Speed</span>
+          <strong style="color: #10B981;">0.4s Instant</strong>
+        </div>
+        <div class="barcode-metric-item">
+          <span>Stock Shrinkage</span>
+          <strong style="color: #10B981;">0% Leakage</strong>
+        </div>
+        <div class="barcode-metric-item">
+          <span>Expiry Alerts</span>
+          <strong style="color: #38BDF8;">Auto-WhatsApp</strong>
+        </div>
+      </div>
+    </div>
+"""
         else:
             them_pts_html = "".join([f'<div class="point-item"><span class="icon-cross">✕</span><span>{pt}</span></div>' for pt in them_points])
             us_pts_html = "".join([f'<div class="point-item"><span class="icon-check">✓</span><span>{pt}</span></div>' for pt in us_points])
@@ -776,6 +824,8 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     </div>
 """
 
+    photo_bg_html = """<div class="photo-bg-layer" style="position: absolute; inset: 0; background-image: url('{{cafe_bg_img}}'); background-size: cover; background-position: center; filter: brightness(0.24) saturate(1.2); pointer-events: none; z-index: 0;"></div>""" if bg_mode == "photo_glass" else ""
+
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -786,7 +836,7 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
   body {{
     width: 1080px;
     height: 1350px;
-    background: #080C14;
+    background: {theme_bg};
     color: #F8FAFC;
     font-family: 'Plus Jakarta Sans', sans-serif;
     position: relative;
@@ -829,22 +879,31 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
   }}
   .z2 {{ position: relative; z-index: 2; }}
 
-  /* Header */
+  /* Header & Logo Capsule Isolation (80/20 Brand Anchor Rule) */
   .header-row {{
     display: flex;
     align-items: center;
     justify-content: space-between;
   }}
-  .brand-group {{
+  .brand-capsule {{
     display: flex;
     align-items: center;
     gap: 16px;
+    background: rgba(15, 23, 42, 0.72);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    padding: 8px 18px;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   }}
   .brand-logo {{
-    height: 64px;
+    height: 52px;
     width: auto;
-    border-radius: 14px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    border-radius: 10px;
+    background: #FFFFFF;
+    padding: 4px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
   }}
   .brand-text {{
     display: flex;
@@ -876,6 +935,7 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     border-radius: 999px;
     text-transform: uppercase;
     letter-spacing: 1px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   }}
 
   /* Hero Section */
@@ -923,17 +983,19 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     color: #CBD5E1;
   }}
   .card-them {{
-    background: rgba(239, 68, 68, 0.05);
-    border: 1.5px solid rgba(239, 68, 68, 0.35);
+    background: rgba(239, 68, 68, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(239, 68, 68, 0.4);
     border-radius: 24px;
     padding: 28px;
   }}
   .card-us {{
-    background: linear-gradient(180deg, rgba(255, 122, 0, 0.12) 0%, rgba(16, 185, 129, 0.08) 100%);
+    background: linear-gradient(180deg, rgba(255, 122, 0, 0.14) 0%, rgba(16, 185, 129, 0.10) 100%);
+    backdrop-filter: blur(10px);
     border: 2px solid {theme_accent};
     border-radius: 24px;
     padding: 28px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
   }}
   .card-title {{
     font-family: 'Outfit', sans-serif;
@@ -1121,8 +1183,9 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     max-width: 960px;
   }}
   .flow-step-card {{
-    background: rgba(255, 255, 255, 0.04);
-    border: 1.5px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
     border-radius: 20px;
     padding: 24px 20px;
     display: flex;
@@ -1168,8 +1231,9 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
 
   /* ARCHETYPE 5: Transparent Sachet Pricing Grid */
   .pricing-grid-card {{
-    background: rgba(255, 255, 255, 0.03);
-    border: 2px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(12px);
+    border: 2px solid rgba(255, 255, 255, 0.14);
     border-radius: 24px;
     padding: 30px 34px;
     max-width: 900px;
@@ -1214,8 +1278,8 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     gap: 14px;
   }}
   .sachet-addon-pill {{
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 12px;
     padding: 12px 16px;
     display: flex;
@@ -1234,10 +1298,146 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     color: #10B981;
   }}
 
+  /* ARCHETYPE 6: Legacy POS Contract Audit */
+  .contract-card {{
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(14px);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 22px;
+    padding: 26px 30px;
+    max-width: 860px;
+    margin: 0 auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  }}
+  .contract-header {{
+    text-align: center;
+    border-bottom: 1.5px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }}
+  .contract-title {{
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    color: #FFFFFF;
+  }}
+  .contract-sub {{
+    font-size: 13px;
+    color: #94A3B8;
+    font-weight: 700;
+    margin-top: 4px;
+  }}
+  .contract-row {{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    font-size: 18px;
+    font-weight: 700;
+  }}
+  .contract-row.trap {{
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid rgba(239, 68, 68, 0.35);
+    color: #FCA5A5;
+  }}
+  .contract-row.trap strong {{
+    color: #EF4444;
+  }}
+  .contract-row.profit {{
+    background: rgba(16, 185, 129, 0.14);
+    border: 1.5px solid #10B981;
+    color: #FFFFFF;
+  }}
+  .contract-row.profit strong {{
+    color: #10B981;
+    font-size: 22px;
+  }}
+
+  /* ARCHETYPE 7: Barcode & Batch Audit */
+  .barcode-card {{
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(14px);
+    border: 1.5px solid rgba(255, 255, 255, 0.18);
+    border-radius: 22px;
+    padding: 26px 30px;
+    max-width: 860px;
+    margin: 0 auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    text-align: center;
+  }}
+  .barcode-header {{
+    border-bottom: 1.5px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+  }}
+  .barcode-title {{
+    font-family: 'Outfit', sans-serif;
+    font-size: 24px;
+    font-weight: 900;
+    color: #FFFFFF;
+  }}
+  .barcode-sub {{
+    font-size: 13px;
+    color: #94A3B8;
+    font-weight: 700;
+    margin-top: 4px;
+  }}
+  .barcode-visual {{
+    background: #FFFFFF;
+    color: #0F172A;
+    padding: 16px;
+    border-radius: 12px;
+    margin: 14px auto;
+    max-width: 440px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }}
+  .barcode-lines {{
+    font-family: 'Courier New', monospace;
+    font-size: 32px;
+    font-weight: 900;
+    letter-spacing: 4px;
+    line-height: 1;
+  }}
+  .barcode-sku {{
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: #475569;
+    margin-top: 6px;
+  }}
+  .barcode-metrics {{
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 14px;
+    margin-top: 18px;
+  }}
+  .barcode-metric-item {{
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }}
+  .barcode-metric-item span {{
+    font-size: 13px;
+    color: #94A3B8;
+    font-weight: 600;
+  }}
+  .barcode-metric-item strong {{
+    font-size: 18px;
+    font-weight: 900;
+    font-family: 'Outfit', sans-serif;
+  }}
+
   /* Pricing Pill Bar */
   .pricing-bar {{
-    background: rgba(255, 255, 255, 0.04);
-    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    border: 1.5px solid rgba(255, 255, 255, 0.12);
     border-radius: 16px;
     padding: 16px 24px;
     display: flex;
@@ -1280,7 +1480,7 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     border-radius: 18px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
     text-decoration: none;
   }}
   .trust-strip {{
@@ -1295,12 +1495,13 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
 </style>
 </head>
 <body>
+  {photo_bg_html}
   <div class="ambient-glow"></div>
   <div class="ambient-glow-2"></div>
   <div class="grid-bg"></div>
 
   <div class="z2 header-row">
-    <div class="brand-group">
+    <div class="brand-capsule">
       <img src="{{{{logo_img}}}}" alt="Cafe QR" class="brand-logo" />
       <div class="brand-text">
         <span class="brand-name">CAFE QR</span>

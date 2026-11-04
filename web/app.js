@@ -6,7 +6,22 @@ document.addEventListener('DOMContentLoaded', () => {
   checkTelegramStatus();
   loadTrends();
   setupLiveEvaluation();
-  loadLatestDraft();
+  
+  // Session Persistence: restore active working draft if user refreshed the page
+  const savedSession = sessionStorage.getItem('cafeqr_active_campaign');
+  if (savedSession) {
+    try {
+      currentCampaign = JSON.parse(savedSession);
+      populateEditor(currentCampaign);
+      displayPreviews(currentCampaign);
+      switchPreviewTab('poster');
+      return;
+    } catch (e) {
+      console.log('Error parsing session campaign:', e);
+    }
+  }
+  // If visiting fresh, check if server has an autonomous draft available without overwriting
+  checkServerDraftAvailability();
 });
 
 // 1. Check Meta Connection Status
@@ -53,20 +68,58 @@ async function checkTelegramStatus() {
   }
 }
 
-// 1c. Load Latest Auto-Generated Campaign Draft
+// 1c. Load Latest Auto-Generated Campaign Draft (On-Demand)
 async function loadLatestDraft() {
+  showLoading('Loading saved server draft...');
   try {
     const res = await fetch('/api/latest-draft');
     const data = await res.json();
     if (data.success && data.draft) {
       currentCampaign = data.draft;
+      sessionStorage.setItem('cafeqr_active_campaign', JSON.stringify(currentCampaign));
       populateEditor(currentCampaign);
       displayPreviews(currentCampaign);
       switchPreviewTab('poster');
+    } else {
+      alert('No previous server draft found.');
     }
   } catch (e) {
     console.log('No previous auto-draft found:', e);
+  } finally {
+    hideLoading();
   }
+}
+
+// 1d. Check Server Draft Availability without overwriting user screen
+async function checkServerDraftAvailability() {
+  try {
+    const res = await fetch('/api/latest-draft');
+    const data = await res.json();
+    if (data.success && data.draft) {
+      const placeholder = document.getElementById('posterPlaceholder');
+      if (placeholder && (!currentCampaign || !currentCampaign.poster_url)) {
+        placeholder.innerHTML = `
+          <div class="empty-icon">🎨</div>
+          <h3>Studio Ready</h3>
+          <p>Click any trending headline on the left or type a custom topic to generate a fresh viral poster.</p>
+          <div style="margin-top: 16px;">
+            <button class="btn btn-secondary btn-sm" onclick="loadLatestDraft()" title="Load last autonomous post">
+              <span>⚡</span> Load Last Server Draft: "${(data.draft.headline || 'Saved Post').slice(0, 36)}..."
+            </button>
+          </div>
+        `;
+      }
+    }
+  } catch (e) {
+    // silent
+  }
+}
+
+// 1e. Clear Active Workspace Session
+function clearCurrentSession() {
+  sessionStorage.removeItem('cafeqr_active_campaign');
+  currentCampaign = null;
+  window.location.reload();
 }
 
 let allTrends = [];
@@ -150,6 +203,7 @@ async function selectTrend(topic, element) {
     const data = await res.json();
     if (data.success && data.campaign) {
       currentCampaign = data.campaign;
+      sessionStorage.setItem('cafeqr_active_campaign', JSON.stringify(currentCampaign));
       populateEditor(currentCampaign);
       displayPreviews(currentCampaign);
       if (window.innerWidth <= 1024) {
@@ -199,6 +253,7 @@ async function reverseEngineerFromUrl() {
     const data = await res.json();
     if (data.success && data.campaign) {
       currentCampaign = data.campaign;
+      sessionStorage.setItem('cafeqr_active_campaign', JSON.stringify(currentCampaign));
       populateEditor(currentCampaign);
       displayPreviews(currentCampaign);
       switchPreviewTab('poster');
@@ -353,6 +408,7 @@ async function reRenderPoster() {
         currentCampaign.evaluation = data.evaluation;
         updateRubricUI(data.evaluation);
       }
+      sessionStorage.setItem('cafeqr_active_campaign', JSON.stringify(currentCampaign));
       displayPreviews(currentCampaign);
       switchPreviewTab('poster');
     }
@@ -383,6 +439,7 @@ async function reRenderReel() {
     if (data.success) {
       currentCampaign.reel_url = data.reel_url;
       currentCampaign.reel_file = data.reel_file;
+      sessionStorage.setItem('cafeqr_active_campaign', JSON.stringify(currentCampaign));
       displayPreviews(currentCampaign);
       switchPreviewTab('reel');
     } else {
