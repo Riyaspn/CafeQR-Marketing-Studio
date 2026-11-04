@@ -152,6 +152,9 @@ async function selectTrend(topic, element) {
       currentCampaign = data.campaign;
       populateEditor(currentCampaign);
       displayPreviews(currentCampaign);
+      if (window.innerWidth <= 1024) {
+        scrollToStudioSection('previewSection');
+      }
     }
   } catch (e) {
     alert(`Failed to generate campaign: ${e.message}`);
@@ -789,3 +792,49 @@ async function triggerAutonomousCycle() {
     hideLoading();
   }
 }
+
+// 12. Mobile & Multi-Device Quick Navigation
+function scrollToStudioSection(sectionId, btn) {
+  const target = document.getElementById(sectionId);
+  if (target) {
+    const navBar = document.getElementById('mobileQuickNav');
+    const navOffset = (navBar && window.getComputedStyle(navBar).display !== 'none') ? navBar.offsetHeight + 10 : 0;
+    const bodyRect = document.body.getBoundingClientRect().top;
+    const elementRect = target.getBoundingClientRect().top;
+    const elementPosition = elementRect - bodyRect;
+    const offsetPosition = elementPosition - navOffset;
+
+    window.scrollTo({
+      top: Math.max(0, offsetPosition),
+      behavior: 'smooth'
+    });
+
+    document.querySelectorAll('.quick-nav-pill').forEach(b => b.classList.remove('active'));
+    if (btn) {
+      btn.classList.add('active');
+    } else {
+      const activeBtn = document.querySelector(`.quick-nav-pill[data-target="${sectionId}"]`);
+      if (activeBtn) activeBtn.classList.add('active');
+    }
+  }
+}
+
+// Active section spy for mobile quick-nav
+window.addEventListener('scroll', () => {
+  if (window.innerWidth > 1024) return;
+  const sections = ['radarSection', 'previewSection', 'editorSection'];
+  const scrollPos = window.scrollY + 120;
+  for (const id of sections) {
+    const el = document.getElementById(id);
+    if (el) {
+      const top = el.offsetTop;
+      const height = el.offsetHeight;
+      if (scrollPos >= top && scrollPos < top + height) {
+        document.querySelectorAll('.quick-nav-pill').forEach(b => {
+          b.classList.toggle('active', b.getAttribute('data-target') === id);
+        });
+        break;
+      }
+    }
+  }
+}, { passive: true });

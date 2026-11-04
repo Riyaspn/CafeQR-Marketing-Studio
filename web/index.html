@@ -41,11 +41,24 @@
     </div>
   </header>
 
+  <!-- Mobile & Tablet Quick Jump Navigation -->
+  <nav class="mobile-quick-nav" id="mobileQuickNav" aria-label="Quick Studio Navigation">
+    <button type="button" class="quick-nav-pill active" data-target="radarSection" onclick="scrollToStudioSection('radarSection', this)">
+      <span>⚡</span> Radar
+    </button>
+    <button type="button" class="quick-nav-pill" data-target="previewSection" onclick="scrollToStudioSection('previewSection', this)">
+      <span>🎨</span> Preview
+    </button>
+    <button type="button" class="quick-nav-pill" data-target="editorSection" onclick="scrollToStudioSection('editorSection', this)">
+      <span>🚀</span> Publish &amp; Edit
+    </button>
+  </nav>
+
   <!-- Main Studio Workspace -->
   <main class="studio-main">
     
     <!-- Left Column: Trend Radar -->
-    <aside class="sidebar-radar">
+    <aside class="sidebar-radar" id="radarSection">
       <div class="sidebar-header">
         <div style="display: flex; justify-content: space-between; align-items: center;">
           <div class="section-title">
@@ -112,7 +125,7 @@
       <div class="workbench-body">
         
         <!-- Left: Visual Preview Canvas -->
-        <div class="preview-panel">
+        <div class="preview-panel" id="previewSection">
           
           <!-- Poster Preview Tab -->
           <div id="posterTab" class="preview-content">
@@ -158,7 +171,7 @@
         </div>
 
         <!-- Right: Copywriting & Controls Workbench -->
-        <div class="editor-panel">
+        <div class="editor-panel" id="editorSection">
           
           <!-- Autonomous 10-Point Viral Rubric Scorecard -->
           <div class="viral-rubric-card" id="viralRubricCard">
