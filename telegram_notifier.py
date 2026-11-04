@@ -11,8 +11,50 @@ from dotenv import load_dotenv
 load_dotenv()
 
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "-1004295934068").strip()
 STUDIO_PUBLIC_URL = os.getenv("STUDIO_PUBLIC_URL", "https://cafeqr-marketing-studio.onrender.com").rstrip("/")
+
+def _normalize_chat_id(raw_id):
+    """Sanitizes chat_id and resolves legacy group IDs that were upgraded to supergroup."""
+    cid = str(raw_id or "").strip()
+    if cid in ("5417011867", "-5417011867"):
+        return "-1004295934068"
+    if not cid:
+        return "-1004295934068"
+    return cid
+
+def _parse_telegram_error(err_body):
+    """Parses Telegram error JSON and checks for supergroup chat migration."""
+    try:
+        data = json.loads(err_body)
+        migrate_id = data.get("parameters", {}).get("migrate_to_chat_id")
+        if migrate_id:
+            return {"migrated": True, "new_chat_id": str(migrate_id), "data": data}
+        return {"migrated": False, "data": data}
+    except Exception:
+        return {"migrated": False, "data": {}}
+
+def _save_migrated_chat_id(new_chat_id):
+    """Updates runtime environment and .env file with newly migrated supergroup chat ID."""
+    global TELEGRAM_CHAT_ID
+    TELEGRAM_CHAT_ID = new_chat_id
+    os.environ["TELEGRAM_CHAT_ID"] = new_chat_id
+    try:
+        env_path = Path(__file__).parent / ".env"
+        if env_path.exists():
+            with open(env_path, "r", encoding="utf-8") as f:
+                lines = f.readlines()
+            for i, line in enumerate(lines):
+                if line.startswith("TELEGRAM_CHAT_ID="):
+                    lines[i] = f"TELEGRAM_CHAT_ID={new_chat_id}\n"
+                    break
+            else:
+                lines.append(f"TELEGRAM_CHAT_ID={new_chat_id}\n")
+            with open(env_path, "w", encoding="utf-8") as f:
+                f.writelines(lines)
+            print(f"🔄 [TelegramNotifier] Auto-updated .env with migrated supergroup chat ID: {new_chat_id}")
+    except Exception as e:
+        print(f"⚠️ [TelegramNotifier] Could not persist migrated chat_id to .env: {e}")
 
 def check_telegram_bot_health():
     """Checks if Telegram bot token is configured and valid."""
@@ -33,7 +75,7 @@ def check_telegram_bot_health():
 def send_test_alert():
     """Sends a test ping to verify bot-to-chat delivery."""
     token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-    chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+    chat_id = _normalize_chat_id(os.getenv("TELEGRAM_CHAT_ID", "-1004295934068"))
     studio_url = os.getenv("STUDIO_PUBLIC_URL", "https://cafeqr-marketing-studio.onrender.com").rstrip("/")
 
     if not token or not chat_id:
@@ -68,7 +110,32 @@ def send_test_alert():
                 return {"success": True, "message_id": res_data.get("result", {}).get("message_id")}
             return {"success": False, "error": res_data.get("description")}
     except urllib.error.HTTPError as e:
-        err_body = e.read().decode("utf-8")
+        err_body = ""
+        try:
+            err_body = e.read().decode("utf-8")
+        except Exception:
+            pass
+        parsed = _parse_telegram_error(err_body)
+        if parsed.get("migrated"):
+            new_id = parsed["new_chat_id"]
+            print(f"🔄 [TelegramNotifier] Supergroup migration detected in test alert! Auto-migrating to: {new_id}")
+            _save_migrated_chat_id(new_id)
+            try:
+                payload = json.dumps({
+                    "chat_id": new_id,
+                    "text": text,
+                    "parse_mode": "HTML",
+                    "reply_markup": {
+                        "inline_keyboard": [[{"text": "🌐 Open Web Studio", "url": studio_url}]]
+                    }
+                }).encode("utf-8")
+                retry_req = urllib.request.Request(url, data=payload, headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(retry_req, timeout=10) as res2:
+                    res2_data = json.loads(res2.read().decode())
+                    if res2_data.get("ok"):
+                        return {"success": True, "message_id": res2_data.get("result", {}).get("message_id"), "migrated_to": new_id}
+            except Exception as retry_err:
+                return {"success": False, "error": f"Auto-migration retry failed: {retry_err}"}
         return {"success": False, "error": f"{e} - Detail: {err_body}"}
     except Exception as e:
         return {"success": False, "error": str(e)}
@@ -80,7 +147,7 @@ def send_telegram_poster_alert(campaign, poster_path):
     and a 1-click link to review and approve in the Web Studio.
     """
     token = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-    chat_id = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+    chat_id = _normalize_chat_id(os.getenv("TELEGRAM_CHAT_ID", "-1004295934068"))
     studio_url = os.getenv("STUDIO_PUBLIC_URL", "https://cafeqr-marketing-studio.onrender.com").rstrip("/")
 
     if not token or not chat_id:
@@ -121,11 +188,11 @@ def send_telegram_poster_alert(campaign, poster_path):
         ]
     }
 
-    def _build_multipart_payload(caption_text, parse_mode="HTML"):
+    def _build_multipart_payload(target_chat_id, caption_text, parse_mode="HTML"):
         boundary = "----WebKitFormBoundaryTG" + hex(int(time.time() * 1000))[2:]
         body = bytearray()
         fields = {
-            "chat_id": chat_id,
+            "chat_id": target_chat_id,
             "caption": caption_text,
             "reply_markup": json.dumps(inline_keyboard)
         }
@@ -152,7 +219,7 @@ def send_telegram_poster_alert(campaign, poster_path):
 
     # Attempt 1: Send Photo with HTML formatting
     try:
-        body, headers = _build_multipart_payload(telegram_caption, parse_mode="HTML")
+        body, headers = _build_multipart_payload(chat_id, telegram_caption, parse_mode="HTML")
         req = urllib.request.Request(url, data=body, headers=headers)
         with urllib.request.urlopen(req, timeout=30) as res:
             res_data = json.loads(res.read().decode())
@@ -165,7 +232,25 @@ def send_telegram_poster_alert(campaign, poster_path):
             err_body = e.read().decode("utf-8")
         except Exception:
             pass
-        print(f"⚠️ [TelegramNotifier] HTML sendPhoto failed: {e} - Detail: {err_body}. Retrying with plain text...")
+        print(f"⚠️ [TelegramNotifier] HTML sendPhoto failed: {e} - Detail: {err_body}")
+
+        # Check for supergroup migration
+        parsed = _parse_telegram_error(err_body)
+        if parsed.get("migrated"):
+            new_id = parsed["new_chat_id"]
+            print(f"🔄 [TelegramNotifier] Supergroup migration detected! Auto-switching to: {new_id}")
+            _save_migrated_chat_id(new_id)
+            chat_id = new_id
+            try:
+                body, headers = _build_multipart_payload(chat_id, telegram_caption, parse_mode="HTML")
+                req = urllib.request.Request(url, data=body, headers=headers)
+                with urllib.request.urlopen(req, timeout=30) as res:
+                    res_data = json.loads(res.read().decode())
+                    if res_data.get("ok"):
+                        print(f"📱 [TelegramNotifier] Alert dispatched to newly migrated supergroup ({chat_id})!")
+                        return {"success": True, "message_id": res_data.get("result", {}).get("message_id")}
+            except Exception as mig_err:
+                print(f"⚠️ [TelegramNotifier] Retry to migrated supergroup failed: {mig_err}")
 
         # Attempt 2: Fallback to plain text caption (No parse_mode)
         try:
@@ -179,7 +264,7 @@ def send_telegram_poster_alert(campaign, poster_path):
                 f"Studio: {studio_url}\n"
                 f"Year 1: ₹2,498 | Year 2+ Renewal: ₹999/yr Forever"
             )
-            body, headers = _build_multipart_payload(plain_caption, parse_mode=None)
+            body, headers = _build_multipart_payload(chat_id, plain_caption, parse_mode=None)
             req = urllib.request.Request(url, data=body, headers=headers)
             with urllib.request.urlopen(req, timeout=30) as res:
                 res_data = json.loads(res.read().decode())
@@ -212,6 +297,38 @@ def send_telegram_poster_alert(campaign, poster_path):
             if res_data.get("ok"):
                 print("📱 [TelegramNotifier] Text notification alert dispatched to Telegram!")
                 return {"success": True, "message_id": res_data.get("result", {}).get("message_id")}
+    except urllib.error.HTTPError as e:
+        err_body = ""
+        try:
+            err_body = e.read().decode("utf-8")
+        except Exception:
+            pass
+        parsed = _parse_telegram_error(err_body)
+        if parsed.get("migrated"):
+            new_id = parsed["new_chat_id"]
+            print(f"🔄 [TelegramNotifier] Supergroup migration detected on text fallback! Migrating to: {new_id}")
+            _save_migrated_chat_id(new_id)
+            try:
+                retry_payload = json.dumps({
+                    "chat_id": new_id,
+                    "text": (
+                        f"🎨 <b>NEW CAFE QR POSTER READY FOR REVIEW</b>\n\n"
+                        f"<b>{safe_badge}</b>\n"
+                        f"📌 <b>Vertical:</b> {safe_vertical}\n"
+                        f"📢 <b>Headline:</b> {safe_headline}\n\n"
+                        f"🔗 <b>Open Studio to Review & Publish:</b>\n{studio_url}"
+                    ),
+                    "parse_mode": "HTML",
+                    "reply_markup": inline_keyboard
+                }).encode("utf-8")
+                retry_req = urllib.request.Request(msg_url, data=retry_payload, headers={"Content-Type": "application/json"})
+                with urllib.request.urlopen(retry_req, timeout=15) as res:
+                    res_data = json.loads(res.read().decode())
+                    if res_data.get("ok"):
+                        print(f"📱 [TelegramNotifier] Text notification dispatched to supergroup ({new_id})!")
+                        return {"success": True, "message_id": res_data.get("result", {}).get("message_id")}
+            except Exception as e2:
+                print(f"⚠️ [TelegramNotifier] Text fallback retry failed: {e2}")
     except Exception as fallback_err:
         print(f"⚠️ [TelegramNotifier] Text message fallback error: {fallback_err}")
 

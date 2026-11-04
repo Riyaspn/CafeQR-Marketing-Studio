@@ -49,7 +49,7 @@ WHATSAPP_DEMO_LINK = f"https://wa.me/{WHATSAPP_DEMO_PHONE}?text=Hi%20Cafe%20QR,%
 
 # Telegram Alert Bot Configuration
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "").strip()
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "-1004295934068").strip()
 STUDIO_PUBLIC_URL = os.getenv("STUDIO_PUBLIC_URL", "https://cafeqr-marketing-studio.onrender.com").rstrip("/")
 
 # Autonomous Background Scheduler (Runs every 4 hours by default)
