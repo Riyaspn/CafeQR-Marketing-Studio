@@ -273,8 +273,10 @@ class StudioHandler(SimpleHTTPRequestHandler):
             video_path = body.get("video_path") or body.get("reel_path") or body.get("reel_file")
             caption = body.get("caption", "")
             target_fb = body.get("facebook", True)
+            target_fb_story = body.get("facebook_story", False)
             target_ig = body.get("instagram", False)
             target_story = body.get("story", False)
+            target_threads = body.get("threads", False)
             public_media_url = body.get("public_media_url", "").strip()
 
             # If image_path not provided or doesn't exist, resolve from public_media_url
@@ -301,6 +303,24 @@ class StudioHandler(SimpleHTTPRequestHandler):
                     results.append(fb_res)
                 except Exception as fb_err:
                     results.append({"platform": "Facebook Page", "success": False, "error": str(fb_err)})
+
+            # Post to Facebook Story
+            if target_fb_story:
+                if public_media_url:
+                    try:
+                        fb_story_res = meta_publisher.publish_to_facebook_story(
+                            media_public_url=public_media_url,
+                            is_video=bool(video_path)
+                        )
+                        results.append(fb_story_res)
+                    except Exception as fb_story_err:
+                        results.append({"platform": "Facebook Story", "success": False, "error": str(fb_story_err)})
+                else:
+                    results.append({
+                        "platform": "Facebook Story",
+                        "success": False,
+                        "error": "Facebook Story requires a public HTTPS URL."
+                    })
 
             # Post to Instagram Feed / Reel
             if target_ig:
@@ -337,6 +357,25 @@ class StudioHandler(SimpleHTTPRequestHandler):
                         "platform": "Instagram Story",
                         "success": False,
                         "error": "Instagram Story requires a public HTTPS URL."
+                    })
+
+            # Post to Threads Profile
+            if target_threads:
+                if public_media_url:
+                    try:
+                        threads_res = meta_publisher.publish_to_threads(
+                            media_public_url=public_media_url,
+                            caption=caption,
+                            is_video=bool(video_path)
+                        )
+                        results.append(threads_res)
+                    except Exception as th_err:
+                        results.append({"platform": "Threads Profile", "success": False, "error": str(th_err)})
+                else:
+                    results.append({
+                        "platform": "Threads Profile",
+                        "success": False,
+                        "error": "Threads requires a public HTTPS URL."
                     })
 
             # Auto-purge published image/video from disk & database upon successful posting

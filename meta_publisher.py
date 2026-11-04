@@ -9,6 +9,7 @@ from config import (
     META_ACCESS_TOKEN,
     CAFE_QR_PAGE_ID,
     INSTAGRAM_ACCOUNT_ID,
+    THREADS_USER_ID,
     META_AD_ACCOUNT_ID,
     BRAND_URL
 )
@@ -309,6 +310,153 @@ def publish_to_instagram_story(media_public_url, is_video=False):
         return {"success": False, "platform": "Instagram Story", "error": e.read().decode()}
     except Exception as e:
         return {"success": False, "platform": "Instagram Story", "error": str(e)}
+
+def publish_to_facebook_story(media_public_url, is_video=False):
+    """
+    Publishes a photo or video story to the Facebook Page via Meta Graph API.
+    Flow for Photo:
+      1. Upload photo to Page as unpublished/temporary (POST /{page-id}/photos with published=false, temporary=true)
+      2. Publish photo story (POST /{page-id}/photo_stories?photo_id={photo_id})
+    """
+    if not META_ACCESS_TOKEN:
+        return {"success": False, "error": "Missing Meta Access Token"}
+    if not CAFE_QR_PAGE_ID:
+        return {"success": False, "error": "No Facebook Page ID configured"}
+
+    try:
+        # Step 1: Upload temporary unpublished photo to Facebook Page
+        photo_url = f"{BASE_GRAPH_URL}/{CAFE_QR_PAGE_ID}/photos"
+        photo_params = urllib.parse.urlencode({
+            "url": media_public_url,
+            "published": "false",
+            "temporary": "true",
+            "access_token": META_ACCESS_TOKEN
+        }).encode("utf-8")
+        req = urllib.request.Request(photo_url, data=photo_params, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
+        with urllib.request.urlopen(req, timeout=30) as res:
+            res_data = json.loads(res.read().decode())
+            photo_id = res_data.get("id")
+
+        if not photo_id:
+            return {"success": False, "platform": "Facebook Story", "error": "Failed to upload photo for story"}
+
+        # Step 2: Publish photo story referencing uploaded photo ID
+        story_url = f"{BASE_GRAPH_URL}/{CAFE_QR_PAGE_ID}/photo_stories"
+        story_params = urllib.parse.urlencode({
+            "photo_id": photo_id,
+            "access_token": META_ACCESS_TOKEN
+        }).encode("utf-8")
+        story_req = urllib.request.Request(story_url, data=story_params, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
+        with urllib.request.urlopen(story_req, timeout=30) as story_res:
+            story_data = json.loads(story_res.read().decode())
+            post_id = story_data.get("post_id") or story_data.get("id")
+            return {
+                "success": True,
+                "platform": "Facebook Story",
+                "post_id": post_id
+            }
+    except urllib.error.HTTPError as e:
+        return {"success": False, "platform": "Facebook Story", "error": e.read().decode()}
+    except Exception as e:
+        return {"success": False, "platform": "Facebook Story", "error": str(e)}
+
+def publish_to_threads(media_public_url, caption="", is_video=False):
+    """
+    Publishes a photo or video post to Threads profile via Meta's Threads API.
+    Flow:
+      1. Determine Threads user ID (from config or /me)
+      2. Create container: POST https://graph.threads.net/v1.0/{user_id}/threads
+      3. Poll until container status is FINISHED
+      4. Publish container: POST https://graph.threads.net/v1.0/{user_id}/threads_publish
+    """
+    if not META_ACCESS_TOKEN:
+        return {"success": False, "error": "Missing Meta Access Token"}
+
+    user_id = THREADS_USER_ID
+    threads_base = "https://graph.threads.net/v1.0"
+
+    # Attempt to auto-resolve Threads user ID if not explicitly configured
+    if not user_id:
+        try:
+            me_url = f"{threads_base}/me?fields=id,username&access_token={META_ACCESS_TOKEN}"
+            me_req = urllib.request.Request(me_url, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
+            with urllib.request.urlopen(me_req, timeout=10) as me_res:
+                me_data = json.loads(me_res.read().decode())
+                user_id = me_data.get("id")
+        except Exception:
+            pass
+
+    if not user_id:
+        return {
+            "success": False,
+            "platform": "Threads Profile",
+            "error": "No Threads User ID configured. Set THREADS_USER_ID in .env or grant 'threads_basic' & 'threads_content_publish' to your Meta token."
+        }
+
+    # Step 1: Create Threads media container
+    container_url = f"{threads_base}/{user_id}/threads"
+    params = {
+        "access_token": META_ACCESS_TOKEN,
+        "text": caption
+    }
+    if is_video:
+        params["media_type"] = "VIDEO"
+        params["video_url"] = media_public_url
+    else:
+        params["media_type"] = "IMAGE"
+        params["image_url"] = media_public_url
+
+    encoded_params = urllib.parse.urlencode(params).encode("utf-8")
+    req = urllib.request.Request(container_url, data=encoded_params, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
+
+    try:
+        with urllib.request.urlopen(req, timeout=30) as res:
+            res_data = json.loads(res.read().decode())
+            creation_id = res_data.get("id")
+
+        if not creation_id:
+            return {"success": False, "platform": "Threads Profile", "error": "Failed to create Threads media container"}
+
+        # Step 2: Poll container status until FINISHED
+        max_polls = 20 if is_video else 10
+        poll_interval = 5 if is_video else 3
+        for attempt in range(max_polls):
+            time.sleep(poll_interval)
+            status_url = f"{threads_base}/{creation_id}?fields=status,error_message&access_token={META_ACCESS_TOKEN}"
+            try:
+                status_res = json.loads(urllib.request.urlopen(status_url, timeout=10).read().decode())
+                status = status_res.get("status")
+                print(f"🧵 [Threads] Container {creation_id} status: {status} (poll {attempt+1}/{max_polls})")
+                if status == "FINISHED":
+                    break
+                elif status == "ERROR":
+                    err_msg = status_res.get("error_message", "Threads processing error")
+                    return {"success": False, "platform": "Threads Profile", "error": err_msg}
+            except Exception as poll_err:
+                print(f"⚠️ [Threads] Poll error: {poll_err}")
+        else:
+            return {"success": False, "platform": "Threads Profile", "error": f"Threads media not ready after {max_polls * poll_interval}s"}
+
+        # Step 3: Publish container
+        publish_url = f"{threads_base}/{user_id}/threads_publish"
+        pub_params = urllib.parse.urlencode({
+            "creation_id": creation_id,
+            "access_token": META_ACCESS_TOKEN
+        }).encode("utf-8")
+        pub_req = urllib.request.Request(publish_url, data=pub_params, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
+        with urllib.request.urlopen(pub_req, timeout=30) as pub_res:
+            pub_data = json.loads(pub_res.read().decode())
+            post_id = pub_data.get("id")
+            return {
+                "success": True,
+                "platform": "Threads Profile",
+                "post_id": post_id,
+                "permalink": f"https://www.threads.net/t/{post_id}" if post_id else ""
+            }
+    except urllib.error.HTTPError as e:
+        return {"success": False, "platform": "Threads Profile", "error": e.read().decode()}
+    except Exception as e:
+        return {"success": False, "platform": "Threads Profile", "error": str(e)}
 
 if __name__ == "__main__":
     health = check_token_health()

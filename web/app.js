@@ -400,14 +400,16 @@ async function publishApprovedCampaign() {
   }
 
   const pubFb = document.getElementById('pubFacebook').checked;
+  const pubFbStory = document.getElementById('pubFacebookStory') ? document.getElementById('pubFacebookStory').checked : false;
   const pubIg = document.getElementById('pubInstagram').checked;
   const pubStory = document.getElementById('pubStory') ? document.getElementById('pubStory').checked : false;
+  const pubThreads = document.getElementById('pubThreads') ? document.getElementById('pubThreads').checked : false;
   const caption = document.getElementById('editCaption').value;
   const feedback = document.getElementById('publishStatus');
   const btn = document.getElementById('publishBtn');
 
-  if (!pubFb && !pubIg && !pubStory) {
-    alert('Please select at least one publishing platform (Facebook, Instagram Feed, or Instagram Story).');
+  if (!pubFb && !pubFbStory && !pubIg && !pubStory && !pubThreads) {
+    alert('Please select at least one publishing platform.');
     return;
   }
 
@@ -426,8 +428,10 @@ async function publishApprovedCampaign() {
         video_path: currentCampaign ? (currentCampaign.reel_file || currentCampaign.reel_path) : null,
         caption: caption,
         facebook: pubFb,
+        facebook_story: pubFbStory,
         instagram: pubIg,
         story: pubStory,
+        threads: pubThreads,
         public_media_url: (currentCampaign && currentCampaign.poster_url) ? (window.location.origin + currentCampaign.poster_url) : ''
       })
     });
