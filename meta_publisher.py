@@ -18,6 +18,48 @@ from config import (
 GRAPH_API_VERSION = "v22.0"
 BASE_GRAPH_URL = f"https://graph.facebook.com/{GRAPH_API_VERSION}"
 
+# Founder Social Accounts for Auto-Tagging & Network Amplification
+FOUNDER_HANDLES = {
+    "founder": "_thrissurkkaran_payyan",
+    "cofounder": "sayooj_jayarajan_uk"
+}
+
+# Precision placement in bottom quadrant of 1080x1350 canvas (non-intrusive)
+DEFAULT_FOUNDER_USER_TAGS = [
+    {"username": "_thrissurkkaran_payyan", "x": 0.25, "y": 0.92},
+    {"username": "sayooj_jayarajan_uk", "x": 0.75, "y": 0.92}
+]
+
+# Meta Location Page IDs for Smart Geo-Targeting & Local Discovery
+LOCATION_MAP = {
+    "bengaluru": "108170889214744",    # Bengaluru, Karnataka (India's #1 F&B Startup Capital)
+    "bangalore": "108170889214744",    # Bengaluru, Karnataka
+    "thrissur": "109673985724817",     # Thrissur, Kerala (Cafe QR HQ)
+    "kochi": "108343812529849",        # Kochi, Kerala
+    "cochin": "108343812529849",
+    "kerala": "109673985724817",       # Default Kerala anchor -> Thrissur
+    "calicut": "112316345447721",      # Kozhikode / Calicut
+    "mumbai": "106516089384594",       # Mumbai, Maharashtra
+    "delhi": "107954159235338",        # New Delhi, India
+    "hyderabad": "108420689182377",    # Hyderabad, Telangana
+    "chennai": "109633395726487"       # Chennai, Tamil Nadu
+}
+
+def resolve_location_id(text=""):
+    """
+    Intelligently determines the best Meta Location ID based on trending keywords in the story,
+    falling back to Bengaluru (for fee hike news) or Thrissur (Cafe QR HQ).
+    """
+    if not text:
+        return "108170889214744"
+    lower = text.lower()
+    for key, loc_id in LOCATION_MAP.items():
+        if key in lower:
+            return loc_id
+    if any(k in lower for k in ["kerala", "malayalam", "porotta", "shawarma", "malabar", "thrissur"]):
+        return LOCATION_MAP["thrissur"]
+    return "108170889214744"
+
 def check_token_health(token=None):
     """
     Checks if the Meta Access Token is active and retrieves linked Facebook Page & Instagram account.
@@ -80,13 +122,16 @@ def check_token_health(token=None):
             "message": str(e)
         }
 
-def publish_to_facebook_page(image_path=None, video_path=None, caption="", image_url=None):
+def publish_to_facebook_page(image_path=None, video_path=None, caption="", image_url=None, location_id=None):
     """
     Publishes a photo or video directly to the Facebook Page using multipart upload,
     or falls back to public URL ingest if image_path is not on local disk.
+    Attaches location/place pin if provided or auto-resolved.
     """
     if not META_ACCESS_TOKEN:
         return {"success": False, "error": "Missing Meta Access Token"}
+
+    loc_id = location_id or resolve_location_id(caption)
 
     # Boundary for multipart form-data
     boundary = "----WebKitFormBoundaryCafeQR" + hex(int(time.time() * 1000))[2:]
@@ -97,19 +142,26 @@ def publish_to_facebook_page(image_path=None, video_path=None, caption="", image
         field_name = "source"
         mime_type = "video/mp4"
         extra_fields = {"description": caption, "access_token": META_ACCESS_TOKEN}
+        if loc_id:
+            extra_fields["place"] = loc_id
     elif image_path and os.path.exists(image_path):
         url = f"{BASE_GRAPH_URL}/{CAFE_QR_PAGE_ID}/photos"
         file_path = image_path
         field_name = "source"
         mime_type = "image/png"
         extra_fields = {"caption": caption, "access_token": META_ACCESS_TOKEN}
+        if loc_id:
+            extra_fields["place"] = loc_id
     elif image_url:
         url = f"{BASE_GRAPH_URL}/{CAFE_QR_PAGE_ID}/photos"
-        params = urllib.parse.urlencode({
+        post_params = {
             "url": image_url,
             "caption": caption,
             "access_token": META_ACCESS_TOKEN
-        }).encode("utf-8")
+        }
+        if loc_id:
+            post_params["place"] = loc_id
+        params = urllib.parse.urlencode(post_params).encode("utf-8")
         req = urllib.request.Request(url, data=params, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
         try:
             with urllib.request.urlopen(req, timeout=30) as res:
@@ -170,15 +222,22 @@ def publish_to_facebook_page(image_path=None, video_path=None, caption="", image
     except Exception as e:
         return {"success": False, "platform": "Facebook Page", "error": str(e)}
 
-def publish_to_instagram(media_public_url, caption="", is_video=False):
+def publish_to_instagram(media_public_url, caption="", is_video=False, user_tags=None, location_id=None):
     """
     Publishes a photo or Reel to Instagram Business account via Meta Graph API.
+    Auto-tags both founders (_thrissurkkaran_payyan & sayooj_jayarajan_uk) on the photo,
+    and attaches a dynamic location pin.
     Note: Instagram API requires an externally reachable HTTPS URL to ingest media.
     """
     if not META_ACCESS_TOKEN:
         return {"success": False, "error": "Missing Meta Access Token"}
     if not INSTAGRAM_ACCOUNT_ID:
         return {"success": False, "error": "No linked Instagram Business Account ID specified"}
+
+    if user_tags is None and not is_video:
+        user_tags = DEFAULT_FOUNDER_USER_TAGS
+
+    loc_id = location_id or resolve_location_id(caption)
 
     # Step 1: Create Media Container
     container_url = f"{BASE_GRAPH_URL}/{INSTAGRAM_ACCOUNT_ID}/media"
@@ -191,14 +250,36 @@ def publish_to_instagram(media_public_url, caption="", is_video=False):
         params["video_url"] = media_public_url
     else:
         params["image_url"] = media_public_url
+        if user_tags:
+            params["user_tags"] = json.dumps(user_tags)
+
+    if loc_id:
+        params["location_id"] = loc_id
 
     encoded_params = urllib.parse.urlencode(params).encode("utf-8")
     req = urllib.request.Request(container_url, data=encoded_params)
 
     try:
-        with urllib.request.urlopen(req, timeout=30) as res:
-            res_data = json.loads(res.read().decode())
-            creation_id = res_data.get("id")
+        try:
+            with urllib.request.urlopen(req, timeout=30) as res:
+                res_data = json.loads(res.read().decode())
+                creation_id = res_data.get("id")
+        except urllib.error.HTTPError as tag_err:
+            # Fallback gracefully if Instagram rejects user tags or location
+            tag_err_body = tag_err.read().decode()
+            print(f"⚠️ [Instagram] Container with user_tags/location had error: {tag_err_body}. Retrying clean...")
+            fallback_params = {
+                "access_token": META_ACCESS_TOKEN,
+                "caption": caption,
+                "image_url" if not is_video else "video_url": media_public_url
+            }
+            if is_video:
+                fallback_params["media_type"] = "REELS"
+            fb_encoded = urllib.parse.urlencode(fallback_params).encode("utf-8")
+            fb_req = urllib.request.Request(container_url, data=fb_encoded)
+            with urllib.request.urlopen(fb_req, timeout=30) as fb_res:
+                res_data = json.loads(fb_res.read().decode())
+                creation_id = res_data.get("id")
 
         if not creation_id:
             return {"success": False, "error": "Failed to create Instagram container"}
@@ -361,14 +442,11 @@ def publish_to_facebook_story(media_public_url, is_video=False):
     except Exception as e:
         return {"success": False, "platform": "Facebook Story", "error": str(e)}
 
-def publish_to_threads(media_public_url, caption="", is_video=False):
+def publish_to_threads(media_public_url, caption="", is_video=False, location_id=None):
     """
     Publishes a photo or video post to Threads profile via Meta's Threads API.
-    Flow:
-      1. Determine Threads user ID (from config or /me)
-      2. Create container: POST https://graph.threads.net/v1.0/{user_id}/threads
-      3. Poll until container status is FINISHED
-      4. Publish container: POST https://graph.threads.net/v1.0/{user_id}/threads_publish
+    Auto-attaches founder handles (_thrissurkkaran_payyan & sayooj_jayarajan_uk)
+    and location pin.
     """
     token = THREADS_ACCESS_TOKEN or META_ACCESS_TOKEN
     if not token:
@@ -376,6 +454,13 @@ def publish_to_threads(media_public_url, caption="", is_video=False):
 
     user_id = THREADS_USER_ID or "39929525056691523"
     threads_base = "https://graph.threads.net/v1.0"
+
+    # Auto-credit both founders on Threads
+    founder_tag = "\n\nBuilt by @_thrissurkkaran_payyan & @sayooj_jayarajan_uk"
+    if "_thrissurkkaran_payyan" not in caption:
+        caption = caption.strip() + founder_tag
+
+    loc_id = location_id or resolve_location_id(caption)
 
     # Attempt to auto-resolve Threads user ID if not explicitly configured
     if not user_id:
@@ -408,13 +493,25 @@ def publish_to_threads(media_public_url, caption="", is_video=False):
         params["media_type"] = "IMAGE"
         params["image_url"] = media_public_url
 
+    if loc_id:
+        params["location_id"] = loc_id
+
     encoded_params = urllib.parse.urlencode(params).encode("utf-8")
     req = urllib.request.Request(container_url, data=encoded_params, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
 
     try:
-        with urllib.request.urlopen(req, timeout=30) as res:
-            res_data = json.loads(res.read().decode())
-            creation_id = res_data.get("id")
+        try:
+            with urllib.request.urlopen(req, timeout=30) as res:
+                res_data = json.loads(res.read().decode())
+                creation_id = res_data.get("id")
+        except urllib.error.HTTPError as loc_err:
+            # Fallback without location_id if Threads rejects location_id
+            params.pop("location_id", None)
+            fb_encoded = urllib.parse.urlencode(params).encode("utf-8")
+            fb_req = urllib.request.Request(container_url, data=fb_encoded, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
+            with urllib.request.urlopen(fb_req, timeout=30) as fb_res:
+                res_data = json.loads(fb_res.read().decode())
+                creation_id = res_data.get("id")
 
         if not creation_id:
             return {"success": False, "platform": "Threads Profile", "error": "Failed to create Threads media container"}

@@ -278,6 +278,7 @@ class StudioHandler(SimpleHTTPRequestHandler):
             target_story = body.get("story", False)
             target_threads = body.get("threads", False)
             public_media_url = body.get("public_media_url", "").strip()
+            location_id = body.get("location_id") or meta_publisher.resolve_location_id(caption)
 
             # If image_path not provided or doesn't exist, resolve from public_media_url
             if (not image_path or not os.path.exists(image_path)) and public_media_url:
@@ -298,7 +299,8 @@ class StudioHandler(SimpleHTTPRequestHandler):
                         image_path=image_path,
                         video_path=video_path,
                         caption=caption,
-                        image_url=public_media_url
+                        image_url=public_media_url,
+                        location_id=location_id
                     )
                     results.append(fb_res)
                 except Exception as fb_err:
@@ -329,7 +331,8 @@ class StudioHandler(SimpleHTTPRequestHandler):
                         ig_res = meta_publisher.publish_to_instagram(
                             media_public_url=public_media_url,
                             caption=caption,
-                            is_video=bool(video_path)
+                            is_video=bool(video_path),
+                            location_id=location_id
                         )
                         results.append(ig_res)
                     except Exception as ig_err:
@@ -366,7 +369,8 @@ class StudioHandler(SimpleHTTPRequestHandler):
                         threads_res = meta_publisher.publish_to_threads(
                             media_public_url=public_media_url,
                             caption=caption,
-                            is_video=bool(video_path)
+                            is_video=bool(video_path),
+                            location_id=location_id
                         )
                         results.append(threads_res)
                     except Exception as th_err:
