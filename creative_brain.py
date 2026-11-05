@@ -236,6 +236,71 @@ Return ONLY valid JSON matching this schema:
             ]
         }
 
+def sanitize_delivery_messaging(campaign_data, topic_item=None):
+    """
+    Deterministic Channel Invariant Sanitizer:
+    Ensures that Food Delivery, Swiggy, Zomato, Cloud Kitchen, QSR, and Dark Store topics
+    position Cafe QR's Integrated Direct Delivery Website (order.cafeqr.in) at 0% Commission,
+    and NEVER hallucinate 'table orders', 'table QR', or 'table revenue' on delivery/cloud kitchen topics.
+    """
+    if not campaign_data or not isinstance(campaign_data, dict):
+        return campaign_data
+
+    topic_item = topic_item or {}
+    text_to_check = " ".join([
+        str(campaign_data.get("headline", "")),
+        str(campaign_data.get("subtext", "")),
+        str(campaign_data.get("target_vertical", "")),
+        str(topic_item.get("title", "")),
+        str(topic_item.get("vertical", "")),
+        str(topic_item.get("category", ""))
+    ]).lower()
+
+    is_delivery_or_cloud_kitchen = any(k in text_to_check for k in [
+        "cloud kitchen", "qsr", "swiggy", "zomato", "food app", "food apps", "delivery", "dark store"
+    ])
+
+    if not is_delivery_or_cloud_kitchen:
+        return campaign_data
+
+    def clean_text(txt):
+        if not txt or not isinstance(txt, str):
+            return txt
+        t = re.sub(r'\btable\s+revenue\b', 'delivery revenue', txt, flags=re.IGNORECASE)
+        t = re.sub(r'\bevery\s+table\s+order\b', 'every delivery order', t, flags=re.IGNORECASE)
+        t = re.sub(r'\ball\s+direct\s+table\s+qr\s+orders\b', 'all direct online delivery orders', t, flags=re.IGNORECASE)
+        t = re.sub(r'\bdirect\s+table\s+qr\s+orders?\b', 'direct online delivery website orders', t, flags=re.IGNORECASE)
+        t = re.sub(r'\bdirect\s+table\s+orders?\b', 'direct online delivery orders', t, flags=re.IGNORECASE)
+        t = re.sub(r'\btable\s+qr\s+ordering\b', 'direct delivery website ordering', t, flags=re.IGNORECASE)
+        t = re.sub(r'\btable\s+qr\s+orders?\b', 'direct delivery website orders', t, flags=re.IGNORECASE)
+        t = re.sub(r'\btable\s+ordering\b', 'direct online delivery ordering', t, flags=re.IGNORECASE)
+        t = re.sub(r'\bcommission\s+on\s+every\s+table\s+order\b', 'commission on every delivery order', t, flags=re.IGNORECASE)
+        t = re.sub(r'\bcommission\s+on\s+table\s+orders?\b', 'commission on delivery orders', t, flags=re.IGNORECASE)
+        t = re.sub(r'\bget\s+table\s+qr\s+and\s+digital\s+menus\b', 'launch your direct delivery website with digital menus', t, flags=re.IGNORECASE)
+        t = re.sub(r'\bincludes\s+table\s+qr\s+ordering\b', 'includes integrated direct delivery website', t, flags=re.IGNORECASE)
+        t = re.sub(r'\bincludes\s+table\s+qr\b', 'includes direct delivery website', t, flags=re.IGNORECASE)
+        t = re.sub(r'\bfull\s+dining\s+profit\b', 'full delivery profit', t, flags=re.IGNORECASE)
+        t = re.sub(r'\bdining\s+profit\b', 'delivery profit', t, flags=re.IGNORECASE)
+        return t
+
+    if "headline" in campaign_data:
+        campaign_data["headline"] = clean_text(campaign_data["headline"])
+        campaign_data["headline"] = re.sub(r'TABLE\s+REVENUE', 'DELIVERY REVENUE', campaign_data["headline"], flags=re.IGNORECASE)
+    if "subtext" in campaign_data:
+        campaign_data["subtext"] = clean_text(campaign_data["subtext"])
+    if "script" in campaign_data:
+        campaign_data["script"] = clean_text(campaign_data["script"])
+    if "caption" in campaign_data:
+        campaign_data["caption"] = clean_text(campaign_data["caption"])
+    if "comparison" in campaign_data and isinstance(campaign_data["comparison"], dict):
+        comp = campaign_data["comparison"]
+        if "them_points" in comp and isinstance(comp["them_points"], list):
+            comp["them_points"] = [clean_text(p) for p in comp["them_points"]]
+        if "us_points" in comp and isinstance(comp["us_points"], list):
+            comp["us_points"] = [clean_text(p) for p in comp["us_points"]]
+
+    return campaign_data
+
 def generate_creative_campaign(topic_item):
     """
     Autonomous Multi-Stage Agentic Creative Brain:
@@ -251,7 +316,7 @@ def generate_creative_campaign(topic_item):
 
     system_persona = f"""You are the Chief Direct-Response Marketing Director for Cafe QR (LLP registered Indian business tech platform, https://cafeqr.in).
 Cafe QR is the modern, affordable billing, QR and operations software used across India by:
-- Restaurants, Cafes & Cloud Kitchens (Table QR ordering, 0.8s thermal KOT, 0% commission direct delivery)
+- Restaurants, Cafes & Cloud Kitchens (0% commission Direct Delivery Website, Table QR ordering, 0.8s thermal KOT)
 - Bakeries & Confectioneries (Batch expiry management, barcode scanning, fast checkout)
 - Car Washes & Auto Detailing (Digital job card tokens, WhatsApp vehicle status alerts, dynamic UPI)
 - Boutiques & Retail Stores (Barcode inventory tags, instant billing, customer Udhaar khata tabs)
@@ -261,12 +326,20 @@ CAFE QR AUTHENTIC SPECS & PRICING:
 - Official App Name: strictly "Cafe QR" (never "Cafe QR POS" or "Cafe QR 2.0").
 - Core Base Plan: Year 1 is ₹2,498 (₹999 Annual Subscription + ₹1,499 One-Time Setup & Onboarding).
 - Year 2 & Beyond Renewal: Just ₹999/year! (Renewal under ₹1,000/year forever; setup fee is never paid again).
-- Base Plan includes: Advanced Billing, Table QR Ordering, Digital Menus, & Quick-Commerce Delivery Integration!
+- Base Plan includes: Advanced Billing, Integrated 0% Commission Direct Online Ordering & Delivery Website, Table QR Ordering (for Dine-In), Digital Menus, & Automated WhatsApp Order Dispatch!
 - Modular bolt-on add-ons: KOT Kitchen Order Tickets (₹499/yr), Credit Ledger Udhaar Tabs (₹499/yr), Customer CRM & Loyalty (₹999/yr), Inventory ERP (₹1,999/yr), Barcode Scanning (₹999/yr), HR & Staff Payroll (₹1,999/yr).
-- Direct delivery: 0% Commission direct table ordering (Swiggy/Zomato charge 25% to 30%).
-- Hardware speed: 0.8s ESC/POS thermal printing with dynamic UPI QR on receipts.
 - Competitor contrast: Petpooja and legacy retail ERPs trap merchants with ₹15,000 to ₹30,000 upfront charges + forced yearly renewals that never go down.
+- Hardware speed: 0.8s ESC/POS thermal printing with dynamic UPI QR on receipts.
 - Official links: Play Store: https://play.google.com/store/apps/details?id=com.cafeqr.app&hl=en_IN | Web: https://cafeqr.in | Instagram: https://www.instagram.com/cafe_qr_
+
+THE TWO DISTINCT FOOD CHANNELS (CRITICAL INDUSTRY DISTINCTION):
+1. FOOD DELIVERY & CLOUD KITCHENS (Swiggy, Zomato, Food Apps, QSRs, Cloud Kitchens):
+   - The Villain / Problem: Swiggy and Zomato are FOOD DELIVERY APPS that charge 25% to 30% commission on ONLINE FOOD DELIVERY ORDERS and mask customer phone numbers.
+   - The Cafe QR Solution: Cafe QR's Integrated Direct Delivery & Online Ordering Website (order.cafeqr.in / branded website) with 0% COMMISSION! Customers order direct via your web store or WhatsApp, pay via instant UPI directly into the restaurant's bank account, and orders print in 0.8s on the kitchen thermal printer. The merchant OWNS 100% of their customer database and phone numbers forever.
+   - BANNED: Cloud kitchens have NO TABLES! NEVER use the words "table QR", "table order", or "table revenue" when talking about food delivery apps or Cloud Kitchens! The correct terms are "Direct Delivery Website", "Online Delivery Orders", or "0% Commission Direct Delivery".
+2. DINE-IN RESTAURANTS & CAFES (Physical dining room with tables):
+   - The Problem: Waiter shortages, paper menu reprint costs, slow checkout lines.
+   - The Cafe QR Solution: Contactless Table QR ordering stickers on physical tables + digital menu + sub-second 0.8s thermal KOT printing.
 
 THE 4 LEGENDARY AD MASTERS & ANTI-AI CONSTITUTION:
 1. Alex Hormozi ($100M Leads): Hook-Retain-Reward pacing. End with frictionless Grand Slam lead magnet (e.g. Reply DEMO for 2-minute unedited video audit).
@@ -316,7 +389,11 @@ CRITICAL INVARIANTS:
      * If "{title}" mentions Petpooja, DotPe, or upfront charges:
        Headline MUST be about POS Fees: e.g., "STOP PAYING ₹15,000 UPFRONT FOR BILLING".
      * If "{title}" mentions Swiggy/Zomato fee hikes or restaurant boycotts:
-       Headline MUST be about Fee Revolts: e.g., "RESTAURANTS REVOLT AGAINST PLATFORM FEES" or "KEEP 100 PERCENT OF YOUR TABLE REVENUE".
+       Headline MUST be about Fee Revolts or Delivery Margins: e.g., "RESTAURANTS REVOLT AGAINST PLATFORM FEES" or "KEEP 100 PERCENT OF DELIVERY REVENUE".
+      * If "{title}" mentions Cloud Kitchens, QSRs, dark stores, food apps, Swiggy, or Zomato:
+        Headline MUST be about Food Delivery Margins or Direct Online Ordering:
+        e.g., "STOP PAYING 30% ON FOOD DELIVERY" or "LAUNCH YOUR DIRECT DELIVERY WEBSITE" or "CLOUD KITCHENS: KEEP 100% DELIVERY MARGIN" or "STOP LOSING MARGIN TO FOOD APPS".
+        BANNED FOR CLOUD KITCHENS: Cloud kitchens have ZERO TABLES! NEVER say "table revenue", "table QR", or "table orders" for food delivery or cloud kitchen stories! The supporting statement MUST be Cafe QR's Integrated Direct Delivery Website (order.cafeqr.in) with 0% Commission!
    - The headline MUST be maximum 7 words, ALL CAPS, punchy, news-relevant, and directly tied to "{title}".
 
 Craft a complete viral direct-response campaign tailored to this awareness stage in strict JSON format:
@@ -328,21 +405,21 @@ Craft a complete viral direct-response campaign tailored to this awareness stage
   "headline": "Bold punchy headline in ALL CAPS, max 7 words with news or specific rupee figures (Ogilvy 80/20 rule)",
   "subtext": "Sharp 1-line sub-hook highlighting the merchant pain point with exact numbers",
   "badge": "Short badge tag (e.g. 🚨 F&B PROFIT ALERT, 🥐 BAKERY RUSH ALERT, 🚗 CAR WASH DETECTIVE, or ⚡ HARDWARE FLEX)",
-  "script": "A 15-20 second conversational voiceover script for Instagram Reels with Williams sensory cues (thermal zipp-zipp, GPay chime, neon UPI QR). Ends with 'Reply DEMO for 2-minute unedited video audit'.",
-  "caption": "Full Instagram/Facebook caption following Ogilvy's Informative Caption Law with hook, bullet points, transparent pricing (Year 1 ₹2,498 / Year 2+ ₹999/yr renewal forever), and hashtags",
+  "script": "A 15-20 second conversational voiceover script for Instagram Reels with Williams sensory cues (thermal zipp-zipp, GPay chime, neon UPI QR). If topic is Cloud Kitchen or food delivery, focus strictly on direct online delivery orders (order.cafeqr.in) with 0% commission and direct UPI. NEVER mention table QR or table ordering for Cloud Kitchens! Ends with 'Reply DEMO for 2-minute unedited video audit'.",
+  "caption": "Full Instagram/Facebook caption following Ogilvy's Informative Caption Law with hook, bullet points, transparent pricing (Year 1 ₹2,498 / Year 2+ ₹999/yr renewal forever), and hashtags. If topic is Cloud Kitchen or food delivery, emphasize the Integrated Direct Delivery Website with 0% commission and 100% customer data retention. NEVER say 'Table QR' for Cloud Kitchens!",
   "comparison": {{
     "title": "Specific focus title tailored strictly to {vertical_hint}",
-    "them_label": "The manual flaw or legacy bottleneck for {vertical_hint}",
+    "them_label": "Aggregator Delivery Trap (for delivery/cloud kitchens) or Legacy Bottleneck",
     "them_points": [
-      "Point 1 with exact flaw for {vertical_hint}",
-      "Point 2 with operational friction for {vertical_hint}",
+      "Point 1 with exact flaw (e.g. 25-30% commission on every online delivery order for food delivery / cloud kitchens)",
+      "Point 2 with operational friction (e.g. Platform hides customer numbers and owns your diner database)",
       "Point 3 with lost profit or customer churn for {vertical_hint}"
     ],
     "us_label": "Cafe QR Direct Solution",
     "us_points": [
-      "Point 1 with 0% commission or Year 1 ₹2,498 / Year 2+ ₹999/yr renewal",
-      "Point 2 with sub-second thermal print or WhatsApp digital tracking",
-      "Point 3 with 100% customer CRM & UPI settlement"
+      "Point 1 with 0% commission Integrated Direct Delivery Website (order.cafeqr.in) or Year 1 ₹2,498 / Year 2+ ₹999/yr",
+      "Point 2 with 100% customer CRM & phone numbers retention or WhatsApp digital tracking",
+      "Point 3 with 0.8s kitchen thermal print & direct UPI settlement straight to bank"
     ]
   }},
   "cta": "Reply DEMO for 2-Minute Video Audit"
@@ -401,6 +478,9 @@ Return ONLY the corrected valid JSON.
         messages.append({"role": "assistant", "content": raw_output})
         messages.append({"role": "user", "content": critique_msg})
         final_campaign = campaign_data
+
+    # Deterministic Channel Invariant: Sanitize Delivery vs Dine-In Messaging
+    final_campaign = sanitize_delivery_messaging(final_campaign, topic_item)
 
     # Finalize with Freeform Generative Poster HTML & Dynamic Audio Profile
     print("🎨 [CreativeBrain] Invoking AI Art Director for bespoke Freeform HTML/CSS poster...")
@@ -1721,5 +1801,20 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     # Deterministic Brand Safeguard: Ensure Year 2+ renewal is strictly ₹999/yr, never 9999
     full_poster_html = re.sub(r'(?:₹|Rs\.?|INR)?\s*9999\b(?:\s*/\s*(?:yr|year))?', '₹999/yr', full_poster_html, flags=re.IGNORECASE)
     full_poster_html = re.sub(r'(?:₹|Rs\.?|INR)?\s*9,999\b(?:\s*/\s*(?:yr|year))?', '₹999/yr', full_poster_html, flags=re.IGNORECASE)
+
+    # Deterministic Delivery Safeguard: Never allow table orders/table revenue on cloud kitchen/delivery topics
+    text_check = f"{vertical} {headline} {topic_item.get('title', '')} {topic_item.get('category', '')}".lower()
+    if any(k in text_check for k in ["cloud kitchen", "qsr", "swiggy", "zomato", "food app", "food apps", "delivery", "dark store"]):
+        full_poster_html = re.sub(r'\btable\s+revenue\b', 'delivery revenue', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\bevery\s+table\s+order\b', 'every delivery order', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\ball\s+direct\s+table\s+qr\s+orders\b', 'all direct online delivery orders', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\bdirect\s+table\s+qr\s+orders?\b', 'direct online delivery website orders', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\bdirect\s+table\s+orders?\b', 'direct online delivery orders', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\btable\s+qr\s+orders?\b', 'direct delivery website orders', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\btable\s+qr\s+ordering\b', 'direct delivery website ordering', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\bcommission\s+on\s+every\s+table\s+order\b', 'commission on every delivery order', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\bcommission\s+on\s+table\s+orders?\b', 'commission on delivery orders', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\bfull\s+dining\s+profit\b', 'full delivery profit', full_poster_html, flags=re.IGNORECASE)
+        full_poster_html = re.sub(r'\bdining\s+profit\b', 'delivery profit', full_poster_html, flags=re.IGNORECASE)
     return full_poster_html
 

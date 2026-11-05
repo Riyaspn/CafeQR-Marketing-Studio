@@ -224,6 +224,7 @@ body {
 
 .custom-input-card input {
   flex: 1;
+  min-width: 0;
   background: var(--bg-input);
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -1053,11 +1054,43 @@ body {
 
 /* 2. Tablets & Mobile (< 1024px) */
 @media (max-width: 1024px) {
-  body {
+  html, body {
     height: auto;
     min-height: 100dvh;
     overflow-y: auto;
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
+  }
+
+  /* Compact wrapping studio header for tablets */
+  .studio-header {
+    height: auto;
+    padding: 12px 18px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .header-left {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
+  .header-right {
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-right .btn, .header-right .status-pill {
+    flex: 1 1 calc(50% - 8px);
+    min-width: 130px;
+    justify-content: center;
+    font-size: 12px;
+    padding: 8px 10px;
   }
 
   /* Show sticky quick-jump navigation */
@@ -1081,7 +1114,7 @@ body {
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 10px 8px;
+    padding: 9px 8px;
     font-family: var(--font-heading);
     font-size: 13px;
     font-weight: 700;
@@ -1091,7 +1124,7 @@ body {
     border-radius: 10px;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 44px;
+    min-height: 42px;
   }
 
   .quick-nav-pill:hover, .quick-nav-pill.active {
@@ -1112,7 +1145,7 @@ body {
   .sidebar-radar {
     width: 100%;
     min-width: 100%;
-    max-height: 420px;
+    max-height: 460px;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
     overflow: visible;
@@ -1125,15 +1158,34 @@ body {
 
   .workbench {
     width: 100%;
+    min-width: 100%;
     height: auto;
     overflow: visible;
   }
 
   .workbench-tabs {
     height: auto;
-    padding: 12px 16px;
+    padding: 10px 14px;
     flex-wrap: wrap;
     gap: 8px;
+  }
+
+  .tab-buttons {
+    display: flex;
+    width: 100%;
+    gap: 6px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 8px 6px;
+    font-size: 12px;
+    text-align: center;
+    white-space: normal;
+    line-height: 1.2;
+    min-height: 40px;
+    border-radius: 8px;
   }
 
   .workbench-body {
@@ -1145,7 +1197,8 @@ body {
 
   .preview-panel {
     width: 100%;
-    min-height: 440px;
+    min-width: 100%;
+    min-height: 420px;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
     padding: 20px 16px;
@@ -1153,7 +1206,7 @@ body {
 
   .poster-container img {
     max-height: 520px;
-    max-width: 90%;
+    max-width: 92%;
     height: auto;
     width: auto;
     object-fit: contain;
@@ -1161,7 +1214,7 @@ body {
 
   .reel-container video {
     max-height: 520px;
-    max-width: 90%;
+    max-width: 92%;
     height: auto;
     width: auto;
   }
@@ -1176,7 +1229,7 @@ body {
   .platform-toggles {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 10px;
+    gap: 8px;
     width: 100%;
   }
 
@@ -1193,18 +1246,17 @@ body {
 /* 3. Mobile Phones (<= 768px, e.g. iPhone SE 375x667, Samsung Galaxy A55 360x800) */
 @media (max-width: 768px) {
   .studio-header {
-    height: auto;
-    padding: 12px 14px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 10px;
+    padding: 10px 12px;
+    gap: 8px;
   }
 
   .header-left {
-    display: flex;
     justify-content: space-between;
     align-items: center;
-    width: 100%;
+  }
+
+  .logo-badge {
+    font-size: 20px;
   }
 
   .tagline {
@@ -1225,84 +1277,87 @@ body {
   .header-right .btn, .header-right .status-pill {
     width: 100%;
     justify-content: center;
-    min-height: 40px;
-    font-size: 12px;
-    padding: 8px 6px;
+    min-height: 38px;
+    font-size: 11px;
+    padding: 6px 8px;
     text-align: center;
+    border-radius: 8px;
   }
 
   .sidebar-header {
-    padding: 12px 14px 8px;
+    padding: 10px 12px 6px;
+  }
+
+  .section-title {
+    font-size: 15px;
   }
 
   .custom-input-card {
-    padding: 0 14px 10px;
+    padding: 0 12px 8px;
   }
 
   .trend-list {
     max-height: 220px;
-    padding: 0 12px 14px;
+    padding: 0 10px 12px;
     gap: 8px;
   }
 
   .trend-item {
-    padding: 12px;
+    padding: 10px 12px;
     border-radius: 10px;
   }
 
+  .trend-title {
+    font-size: 13px;
+  }
+
   .tab-buttons {
-    display: flex;
-    width: 100%;
-    gap: 6px;
+    gap: 4px;
   }
 
   .tab-btn {
-    flex: 1;
-    padding: 8px 6px;
     font-size: 11px;
-    text-align: center;
-    white-space: normal;
-    line-height: 1.2;
-    min-height: 40px;
+    padding: 6px 4px;
+    min-height: 36px;
   }
 
   .preview-panel {
-    padding: 16px 12px;
+    padding: 14px 10px;
     min-height: 360px;
   }
 
   .poster-container img {
-    max-height: 56vh;
+    max-height: 54vh;
     max-width: 95%;
   }
 
   .reel-container video {
-    max-height: 56vh;
+    max-height: 54vh;
     max-width: 95%;
   }
 
   .preview-actions {
     flex-direction: column;
     width: 100%;
-    gap: 8px;
+    gap: 6px;
   }
 
   .preview-actions .btn {
     width: 100%;
     justify-content: center;
-    min-height: 44px;
+    min-height: 40px;
   }
 
   .editor-panel {
-    padding: 16px 12px;
-    gap: 14px;
+    padding: 14px 10px;
+    gap: 12px;
   }
 
   /* Prevent automatic Safari zoom on focus by enforcing 16px text on touch devices */
   .form-group input, .form-group textarea, .form-group select {
     font-size: 16px !important;
-    min-height: 44px;
-    padding: 10px 12px;
+    min-height: 42px;
+    padding: 9px 12px;
   }
 
   .form-row {
@@ -1312,12 +1367,12 @@ body {
 
   .form-actions-row {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .form-actions-row .btn {
     width: 100%;
-    min-height: 44px;
+    min-height: 42px;
     justify-content: center;
   }
 
@@ -1340,12 +1395,12 @@ body {
 
   .sound-custom-search-row {
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
   }
 
   .sound-custom-search-row button {
     width: 100%;
-    min-height: 40px;
+    min-height: 38px;
   }
 
   .music-reach-booster {
@@ -1356,86 +1411,99 @@ body {
 
   .music-reach-booster button {
     width: 100%;
-    min-height: 38px;
+    min-height: 36px;
   }
 
   .dock-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 8px;
   }
 
   .platform-toggles {
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 6px;
     width: 100%;
   }
 
   .toggle-label {
-    min-height: 44px;
-    font-size: 12px;
-    padding: 8px 10px;
+    min-height: 42px;
+    font-size: 11.5px;
+    padding: 7px 8px;
   }
 
   .toggle-label input {
-    width: 18px;
-    height: 18px;
+    width: 17px;
+    height: 17px;
   }
 
   .btn-publish {
     font-size: 14px;
-    padding: 15px 10px;
-    min-height: 52px;
+    padding: 14px 8px;
+    min-height: 50px;
     letter-spacing: 0;
   }
 
   /* Modal responsiveness for mobile */
   .modal-card {
-    width: calc(100vw - 20px);
-    max-width: 95vw;
-    padding: 16px 12px;
-    margin: 8px;
-    border-radius: 16px;
-    max-height: 90vh;
+    width: calc(100vw - 16px);
+    max-width: 96vw;
+    padding: 14px 10px;
+    margin: 8px auto;
+    border-radius: 14px;
+    max-height: 92vh;
   }
 
   .modal-body {
-    max-height: 60vh;
+    max-height: 65vh;
   }
 
   .modal-footer {
     flex-direction: column-reverse;
-    gap: 8px;
+    gap: 6px;
   }
 
   .modal-footer .btn {
     width: 100%;
-    min-height: 44px;
+    min-height: 42px;
     justify-content: center;
   }
 }
 
 /* 4. Ultra-Compact Mobile (< 380px, e.g. Samsung Galaxy A55 360x800 & iPhone SE 375x667) */
 @media (max-width: 380px) {
-  .platform-toggles {
-    grid-template-columns: 1fr;
+  .logo-badge {
+    font-size: 18px;
   }
 
   .header-right {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
   }
 
-  .tab-buttons {
-    flex-direction: column;
+  .header-right .btn, .header-right .status-pill {
+    font-size: 10px;
+    padding: 5px 4px;
+    min-height: 34px;
   }
 
   .tab-btn {
-    width: 100%;
-    text-align: center;
+    font-size: 10px;
+    padding: 5px 2px;
+  }
+
+  .platform-toggles {
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+  }
+
+  .toggle-label {
+    font-size: 11px;
+    padding: 6px 4px;
   }
 
   .dock-title {
-    font-size: 14px;
+    font-size: 13px;
   }
 }
 
