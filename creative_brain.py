@@ -303,6 +303,21 @@ Core Friction Point: {merchant_pain}
 CRITICAL INVARIANTS:
 1. PRICING LOCKDOWN: Year 1 Base Plan is ₹2,498 (Setup included). Year 2+ Renewal is strictly ₹999/year forever (three digits: ₹999, NEVER 9999).
 2. DOMAIN RELEVANCE: Tailor all copy strictly to {vertical_hint}. If {vertical_hint} is Car Wash or Auto Care, focus on digital job cards, lost tokens, and WhatsApp status (NEVER mention Petpooja or restaurant POS). If Bakery, focus on fresh batches and barcodes.
+3. STORY-GROUNDED TREND-JACKING (MANDATORY):
+   - The headline MUST DIRECTLY TREND-JACK THE EXACT TOPIC: "{title}".
+   - BANNED: NEVER output a generic "STOP PAYING 30 PERCENT COMMISSION NOW" if "{title}" is about customer data, privacy, POS lock-in, car washes, or bakeries!
+   - Specific Topic Matching Rules:
+     * If "{title}" mentions customer data, privacy, or Zomato sharing data:
+       Headline MUST be about Customer Data Ownership: e.g., "STOP LETTING AGGREGATORS OWN YOUR CUSTOMERS" or "OWN 100 PERCENT OF YOUR RESTAURANT DATA" or "WHY SHARE DATA WHEN YOU OWN IT?".
+     * If "{title}" mentions sugar, milk, dairy, or input cost inflation:
+       Headline MUST be about Ingredient Costs: e.g., "SUGAR & DAIRY SURGE SQUEEZES SWEET SHOPS" or "PROTECT BAKERY MARGINS FROM RISING COSTS".
+     * If "{title}" mentions car washes, auto tokens, or water notices:
+       Headline MUST be about Auto Tokens: e.g., "STOP LOSING REPAIR JOB CARDS NOW" or "DIGITAL JOB CARDS FOR BUSY GARAGES".
+     * If "{title}" mentions Petpooja, DotPe, or upfront charges:
+       Headline MUST be about POS Fees: e.g., "STOP PAYING ₹15,000 UPFRONT FOR BILLING".
+     * If "{title}" mentions Swiggy/Zomato fee hikes or restaurant boycotts:
+       Headline MUST be about Fee Revolts: e.g., "RESTAURANTS REVOLT AGAINST PLATFORM FEES" or "KEEP 100 PERCENT OF YOUR TABLE REVENUE".
+   - The headline MUST be maximum 7 words, ALL CAPS, punchy, news-relevant, and directly tied to "{title}".
 
 Craft a complete viral direct-response campaign tailored to this awareness stage in strict JSON format:
 {{
@@ -604,17 +619,88 @@ Example skeleton:
   </div>
 </div>
 
-ARCHETYPE 3: "flow-container" (3-Step Velocity / Hardware Benchmark Flow)
-- 3 connected step cards showing sub-second speed & direct UPI.
+ARCHETYPE 3: "flow-container" (3-Step Velocity Benchmark Flow)
+Example skeleton:
+<div class="flow-container">
+  <div class="flow-step">
+    <div class="flow-num">01</div>
+    <div class="flow-info"><div class="flow-title">Table Scan</div><div class="flow-desc">Diner scans UPI QR in 0.2s</div></div>
+  </div>
+  <div class="flow-step">
+    <div class="flow-num">02</div>
+    <div class="flow-info"><div class="flow-title">Instant Thermal Print</div><div class="flow-desc">Kitchen gets ticket in 0.8s</div></div>
+  </div>
+  <div class="flow-step highlight">
+    <div class="flow-num">03</div>
+    <div class="flow-info"><div class="flow-title">Direct Settlement</div><div class="flow-desc">100% money in bank, 0% cut</div></div>
+  </div>
+</div>
 
 ARCHETYPE 4: "comparison-grid" (Split Contrast Matrix)
-- Split Red TRAP vs Green PROFIT cards.
+Example skeleton:
+<div class="comparison-grid">
+  <div class="card-them">
+    <div class="card-title them-title">
+      <span>Aggregator Trap</span>
+      <span style="font-size: 14px; background: rgba(239,68,68,0.25); color: #F87171; padding: 4px 10px; border-radius: 8px;">TRAP</span>
+    </div>
+    <div class="point-item"><span class="icon-cross">✕</span><span>Platform masks customer numbers</span></div>
+    <div class="point-item"><span class="icon-cross">✕</span><span>Competitors re-target your own diners</span></div>
+    <div class="point-item"><span class="icon-cross">✕</span><span>Forced 25-30% cut on every single order</span></div>
+  </div>
+  <div class="card-us">
+    <div class="card-title us-title">
+      <span>Cafe QR Direct</span>
+      <span style="font-size: 14px; background: rgba(16,185,129,0.25); color: #34D399; padding: 4px 10px; border-radius: 8px;">PROFIT</span>
+    </div>
+    <div class="point-item"><span class="icon-check">✓</span><span>100% direct customer data & phone numbers</span></div>
+    <div class="point-item"><span class="icon-check">✓</span><span>Direct WhatsApp marketing with 0% fee</span></div>
+    <div class="point-item"><span class="icon-check">✓</span><span>Direct UPI payout straight to your bank</span></div>
+  </div>
+</div>
 
 ARCHETYPE 6: "contract-card" (Legacy POS Contract Audit)
-- Compares ₹15,000–₹30,000 upfront lock-in with Cafe QR Year 1 ₹2,498 / Year 2 ₹999/yr forever.
+Example skeleton:
+<div class="contract-card">
+  <div class="contract-header">
+    <div class="contract-title">RETAIL &amp; POS CONTRACT AUDIT</div>
+    <div class="contract-sub">ANNUAL SOFTWARE EXPOSURE COMPARISON</div>
+  </div>
+  <div class="contract-row trap">
+    <span>Legacy Upfront Lock-in (Petpooja / Posist)</span>
+    <strong>₹15,000 – ₹30,000</strong>
+  </div>
+  <div class="contract-row trap">
+    <span>Forced Yearly Renewal Escalation</span>
+    <strong>₹8,000 – ₹12,000/yr</strong>
+  </div>
+  <div class="contract-row profit">
+    <span>CAFE QR YEAR 1 BASE PLAN (Setup Included)</span>
+    <strong>₹2,498</strong>
+  </div>
+  <div class="contract-row profit">
+    <span>CAFE QR YEAR 2+ RENEWAL (Forever)</span>
+    <strong>₹999/yr</strong>
+  </div>
+</div>
 
 ARCHETYPE 7: "barcode-card" (Barcode & Batch Expiry Audit)
-- Barcode visual + SKU verification for bakeries and boutiques.
+Example skeleton:
+<div class="barcode-card">
+  <div class="barcode-header">
+    <div class="barcode-title">BARCODE SCAN &amp; BATCH EXPIRY AUDIT</div>
+    <div class="barcode-sub">{vertical.upper()} STOCK INTEGRITY REPORT</div>
+  </div>
+  <div class="barcode-visual">
+    <div class="barcode-lines">||| | |||| || | ||||| ||| | |||</div>
+    <div class="barcode-sku">SKU #89042-BATCH-04 • VERIFIED</div>
+  </div>
+  <div class="barcode-metrics">
+    <div class="barcode-metric-item"><span>Checkout Speed</span><strong style="color: #10B981;">0.4s Instant</strong></div>
+    <div class="barcode-metric-item"><span>Stock Shrinkage</span><strong style="color: #10B981;">0% Leakage</strong></div>
+    <div class="barcode-metric-item"><span>Expiry Alerts</span><strong style="color: #38BDF8;">Auto-WhatsApp</strong></div>
+  </div>
+</div>
 
 CRITICAL CONTRACT:
 Tailor the text, figures, and points specifically to {vertical} and the topic.
@@ -647,8 +733,15 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
                     last_idx = cleaned_centerpiece.rfind("</div>")
                     if last_idx != -1:
                         cleaned_centerpiece = cleaned_centerpiece[:last_idx] + cleaned_centerpiece[last_idx+6:]
-            centerpiece_html = cleaned_centerpiece
-            print(f"🎨 [CreativeBrain] Bespoke centerpiece card successfully generated by AI Art Director for {vertical}.")
+            
+            # Enforce that LLM returned a recognized high-contrast card class
+            valid_classes = ["receipt-container", "chat-container", "comparison-grid", "contract-card", "barcode-card", "flow-container"]
+            if any(cls in cleaned_centerpiece for cls in valid_classes):
+                centerpiece_html = cleaned_centerpiece
+                print(f"🎨 [CreativeBrain] Bespoke centerpiece card successfully generated by AI Art Director for {vertical}.")
+            else:
+                print(f"⚠️ [CreativeBrain] Centerpiece missing structured container classes. Using vertical-aware fallback.")
+                centerpiece_html = None
     except Exception as e:
         print(f"[CreativeBrain] AI Centerpiece generation warning: {e}. Using structured fallback.")
 
@@ -824,7 +917,27 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     </div>
 """
 
-    photo_bg_html = """<div class="photo-bg-layer" style="position: absolute; inset: 0; background-image: url('{{cafe_bg_img}}'); background-size: cover; background-position: center; filter: brightness(0.24) saturate(1.2); pointer-events: none; z-index: 0;"></div>""" if bg_mode == "photo_glass" else ""
+    # 2. News Proof & Real-World Trend Anchor Extraction
+    news_title = topic_item.get("title") or campaign_data.get("news_title", "")
+    news_source = topic_item.get("source") or campaign_data.get("source_tag", "Industry Intel")
+    news_category = topic_item.get("category_label") or topic_item.get("category", "TRENDING INTEL")
+
+    news_anchor_html = ""
+    if news_title:
+        display_title = news_title if len(news_title) <= 90 else news_title[:87] + "..."
+        news_anchor_html = f"""
+  <div class="z2 news-anchor-card">
+    <div class="news-anchor-meta">
+      <span class="news-pulse-dot"></span>
+      <span class="news-source-tag">TRENDING INTEL • {news_source.upper()}</span>
+      <span class="news-cat-tag">{news_category}</span>
+    </div>
+    <div class="news-quote-title">"{display_title}"</div>
+  </div>
+"""
+
+    # Atmospheric Background: Subdued (12% opacity, 16px blur) so it NEVER competes with typography
+    photo_bg_html = """<div class="photo-bg-layer" style="position: absolute; inset: 0; background-image: url('{{cafe_bg_img}}'); background-size: cover; background-position: center; filter: blur(16px) brightness(0.08) saturate(0.5); opacity: 0.12; pointer-events: none; z-index: 0;"></div>""" if bg_mode == "photo_glass" else ""
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -841,7 +954,7 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     font-family: 'Plus Jakarta Sans', sans-serif;
     position: relative;
     overflow: hidden;
-    padding: 64px 60px;
+    padding: 44px 50px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -938,31 +1051,80 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
   }}
 
+  /* News Proof & Trend Anchor Card (Shows the Real News Headline) */
+  .news-anchor-card {{
+    background: rgba(15, 23, 42, 0.90);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    border: 1.5px solid rgba(255, 255, 255, 0.14);
+    border-left: 6px solid {theme_accent};
+    border-radius: 16px;
+    padding: 12px 20px;
+    margin: 10px 0 6px 0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  }}
+  .news-anchor-meta {{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }}
+  .news-pulse-dot {{
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #EF4444;
+    box-shadow: 0 0 10px #EF4444;
+  }}
+  .news-source-tag {{
+    color: {theme_accent};
+    font-weight: 900;
+  }}
+  .news-cat-tag {{
+    background: rgba(255, 255, 255, 0.08);
+    color: #94A3B8;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+  }}
+  .news-quote-title {{
+    font-family: 'Outfit', sans-serif;
+    font-size: 21px;
+    font-weight: 800;
+    color: #F8FAFC;
+    line-height: 1.25;
+    letter-spacing: -0.2px;
+  }}
+
   /* Hero Section */
   .hero-section {{
-    margin: 20px 0 10px 0;
+    margin: 10px 0 6px 0;
   }}
   .headline-main {{
     font-family: 'Outfit', sans-serif;
-    font-size: 58px;
+    font-size: 50px;
     font-weight: 900;
     line-height: 1.1;
     text-transform: uppercase;
     letter-spacing: -1px;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
   }}
   .headline-main span {{
     color: {theme_accent};
   }}
   .subtext-main {{
-    font-size: 23px;
+    font-size: 21px;
     color: #94A3B8;
-    line-height: 1.4;
+    line-height: 1.35;
   }}
 
   /* Centerpiece Card Container */
   .centerpiece-box {{
-    margin: 20px 0;
+    margin: 14px 0;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -971,7 +1133,7 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
   .comparison-grid {{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    gap: 20px;
     align-items: stretch;
   }}
   .comparison-grid > *:not(.card-them):not(.card-us) {{
@@ -983,25 +1145,28 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     color: #CBD5E1;
   }}
   .card-them {{
-    background: rgba(239, 68, 68, 0.08);
-    backdrop-filter: blur(10px);
-    border: 1.5px solid rgba(239, 68, 68, 0.4);
-    border-radius: 24px;
-    padding: 28px;
+    background: rgba(22, 12, 16, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1.5px solid rgba(239, 68, 68, 0.5);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
   }}
   .card-us {{
-    background: linear-gradient(180deg, rgba(255, 122, 0, 0.14) 0%, rgba(16, 185, 129, 0.10) 100%);
-    backdrop-filter: blur(10px);
+    background: rgba(10, 24, 18, 0.94);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 2px solid {theme_accent};
-    border-radius: 24px;
-    padding: 28px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
   }}
   .card-title {{
     font-family: 'Outfit', sans-serif;
     font-size: 22px;
     font-weight: 800;
-    margin-bottom: 18px;
+    margin-bottom: 16px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -1014,7 +1179,7 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     gap: 12px;
     font-size: 17px;
     line-height: 1.4;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     color: #E2E8F0;
   }}
   .icon-cross {{ color: #EF4444; font-weight: bold; font-size: 18px; min-width: 20px; }}
@@ -1510,6 +1675,8 @@ Do NOT include markdown fences, DO NOT include <html> or <body> tags.
     </div>
     <div class="badge-pill">{badge}</div>
   </div>
+
+  {news_anchor_html}
 
   <div class="z2 hero-section">
     <h1 class="headline-main">{styled_headline}</h1>

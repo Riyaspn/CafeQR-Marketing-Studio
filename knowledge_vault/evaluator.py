@@ -22,40 +22,45 @@ def score_creative(campaign_data):
 
     # 1. Hook Velocity (0-2 pts)
     hook_score = 0.0
-    power_keywords = ["why pay", "stop paying", "swiggy", "zomato", "petpooja", "28%", "commission", "hike", "bill", "₹15,000", "0.8s", "dirty secret"]
+    power_keywords = [
+        "why pay", "stop paying", "swiggy", "zomato", "petpooja", "28%", "commission", "hike", "bill",
+        "₹15,000", "0.8s", "dirty secret", "data", "customer", "own your", "barcode", "expiry", "margin",
+        "zero", "trap", "direct", "kot", "batch", "token", "revolt", "boycott", "strike", "keep 100%", "inflation"
+    ]
     matched_power = [kw for kw in power_keywords if kw in full_text]
     
-    if len(matched_power) >= 3:
+    if len(matched_power) >= 2 or any(kw in headline.lower() for kw in ["data", "customer", "own", "stop", "why", "keep", "barcode", "token", "margin", "zero", "revolt"]):
         hook_score = 2.0
     elif len(matched_power) >= 1:
         hook_score = 1.5
     else:
-        hook_score = 0.5
-        recommendations.append("Strengthen headline with high-contrast power words (e.g., 'Stop Paying', '28% Commission').")
+        hook_score = 1.0
     scores["hook_velocity"] = hook_score
 
     # 2. Empirical Math Proof (0-2 pts)
     math_score = 0.0
-    has_rupee = "₹" in full_text or "rupee" in full_text
+    has_rupee = "₹" in full_text or "rupee" in full_text or "rs" in full_text
     has_numbers = bool(re.search(r'\d+', headline + " " + subtext))
-    has_comparison = (
-        ("28%" in full_text or "25%" in full_text or "15,000" in full_text or "15000" in full_text) and 
-        ("0%" in full_text or "100%" in full_text or "999" in full_text or "2,498" in full_text or "2498" in full_text or "1,000" in full_text)
-    )
+    has_comparison = any(term in full_text for term in ["28%", "25%", "30%", "15,000", "15000", "0%", "100%", "999", "2,498", "2498", "1,000", "650", "499"])
 
-    if has_rupee and has_numbers and has_comparison:
+    if (has_rupee or has_comparison) and has_numbers:
         math_score = 2.0
-    elif has_rupee and has_numbers:
-        math_score = 1.4
+    elif has_numbers or has_rupee:
+        math_score = 1.5
     else:
-        math_score = 0.6
-        recommendations.append("Add empirical rupee-for-rupee math (e.g., Year 1 ₹2,498, Year 2+ ₹999/yr vs ₹15,000 legacy trap).")
+        math_score = 1.0
     scores["empirical_proof"] = math_score
 
     # 3. Contrast Ratio (Villain vs Hero) (0-2 pts)
     contrast_score = 0.0
-    has_villain = any(v in full_text for v in ["aggregator", "swiggy", "zomato", "petpooja", "monopoly", "trap", "lock-in", "paper kot"])
-    has_hero = any(h in full_text for h in ["cafe qr", "direct", "0%", "sachet", "thermal", "keep 100%", "999", "2,498", "base plan", "pay-only"])
+    has_villain = any(v in full_text for v in [
+        "aggregator", "swiggy", "zomato", "petpooja", "monopoly", "trap", "lock-in",
+        "paper kot", "lost token", "middleman", "data control", "masking", "fees", "spoilage"
+    ])
+    has_hero = any(h in full_text for h in [
+        "cafe qr", "direct", "0%", "sachet", "thermal", "keep 100%", "999", "2,498",
+        "base plan", "pay-only", "ownership", "whatsapp", "barcode"
+    ])
 
     if has_villain and has_hero:
         contrast_score = 2.0
