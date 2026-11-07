@@ -340,14 +340,31 @@ def rank_and_filter_trends(news_items, top_n=6, filter_vertical=None):
 
     try:
         from creative_brain import call_nvidia_nim, clean_json_response
+        # Multi-Vertical Balanced Sampling: Ensure all business sectors (Restaurants, Bakeries, Car Washes, Retail, POS) are evaluated
         candidates = []
-        for idx, item in enumerate(news_items[:15]):
-            candidates.append({
-                "id": idx,
-                "title": item["title"],
-                "vertical": item.get("vertical", "General"),
-                "summary": item.get("summary", "")[:120]
-            })
+        vert_counts = {}
+        for idx, item in enumerate(news_items):
+            v = item.get("vertical", "General")
+            if vert_counts.get(v, 0) < 3 and len(candidates) < 20:
+                vert_counts[v] = vert_counts.get(v, 0) + 1
+                candidates.append({
+                    "id": idx,
+                    "title": item["title"],
+                    "vertical": v,
+                    "summary": item.get("summary", "")[:120]
+                })
+
+        # Fill remaining slots if needed
+        if len(candidates) < 15:
+            existing_ids = {c["id"] for c in candidates}
+            for idx, item in enumerate(news_items):
+                if idx not in existing_ids and len(candidates) < 20:
+                    candidates.append({
+                        "id": idx,
+                        "title": item["title"],
+                        "vertical": item.get("vertical", "General"),
+                        "summary": item.get("summary", "")[:120]
+                    })
 
         prompt = f"""
 You are the Chief Trend Strategist for Cafe QR (Indian billing, table QR & retail software used by restaurants, bakeries, car washes, and boutiques).

@@ -301,13 +301,14 @@ def sanitize_delivery_messaging(campaign_data, topic_item=None):
 
     return campaign_data
 
-def generate_creative_campaign(topic_item):
+def generate_creative_campaign(topic_item, banned_headlines=None):
     """
     Autonomous Multi-Stage Agentic Creative Brain:
     1. Strategic Synthesis & Awareness Stage Assignment (Eugene Schwartz).
     2. Creative Drafting adhering to the 4 Legendary Ad Masters (Hormozi, Ogilvy, Schwartz, Williams).
     3. Autonomous Reflection & Self-Critique Loop (Auditing with score_creative and self-correcting up to 3 passes).
-    4. Dynamic AI Sound Direction.
+    4. Anti-Repetition Guardrail preventing duplicate headlines across consecutive runs.
+    5. Dynamic AI Sound Direction.
     """
     title = topic_item.get("title", "Indian Business Billing & Margin Squeeze")
     source = topic_item.get("source", "Industry Intel")
@@ -362,6 +363,19 @@ THE 4 LEGENDARY AD MASTERS & ANTI-AI CONSTITUTION:
     rupee_figures = deep_intel.get("rupee_figures", "Exact Rupee Savings")
     merchant_pain = deep_intel.get("merchant_pain", "Legacy fee lock-in")
 
+    banned_clause = ""
+    if banned_headlines:
+        clean_banned = [b for b in banned_headlines if b]
+        if clean_banned:
+            banned_list_str = "\n".join([f"- \"{b}\"" for b in clean_banned[:8]])
+            banned_clause = f"""
+4. STRICT ANTI-REPETITION LOCKDOWN (BANNED RECENT HEADLINES):
+The following headlines have ALREADY been published recently to our audience:
+{banned_list_str}
+You are STRICTLY FORBIDDEN from generating any of these headlines or any headline with similar wording or the same structure!
+You MUST craft a FRESH, NEVER-BEFORE-SEEN headline with a completely different hook, different vocabulary, and a distinct angle.
+"""
+
     draft_prompt = f"""
 NEWS TOPIC TO TREND-JACK:
 "{title}"
@@ -389,12 +403,13 @@ CRITICAL INVARIANTS:
      * If "{title}" mentions Petpooja, DotPe, or upfront charges:
        Headline MUST be about POS Fees: e.g., "STOP PAYING ₹15,000 UPFRONT FOR BILLING".
      * If "{title}" mentions Swiggy/Zomato fee hikes or restaurant boycotts:
-       Headline MUST be about Fee Revolts or Delivery Margins: e.g., "RESTAURANTS REVOLT AGAINST PLATFORM FEES" or "KEEP 100 PERCENT OF DELIVERY REVENUE".
+       Headline MUST be about Fee Revolts or Delivery Margins: e.g., "RESTAURANTS REVOLT AGAINST PLATFORM FEES" or "KEEP 100 PERCENT OF DELIVERY REVENUE" or "HOW MUCH COMMISSION ARE YOU LOSING?" or "EATERIES WARN OF 15-DAY APP BOYCOTT".
       * If "{title}" mentions Cloud Kitchens, QSRs, dark stores, food apps, Swiggy, or Zomato:
         Headline MUST be about Food Delivery Margins or Direct Online Ordering:
         e.g., "STOP PAYING 30% ON FOOD DELIVERY" or "LAUNCH YOUR DIRECT DELIVERY WEBSITE" or "CLOUD KITCHENS: KEEP 100% DELIVERY MARGIN" or "STOP LOSING MARGIN TO FOOD APPS".
         BANNED FOR CLOUD KITCHENS: Cloud kitchens have ZERO TABLES! NEVER say "table revenue", "table QR", or "table orders" for food delivery or cloud kitchen stories! The supporting statement MUST be Cafe QR's Integrated Direct Delivery Website (order.cafeqr.in) with 0% Commission!
    - The headline MUST be maximum 7 words, ALL CAPS, punchy, news-relevant, and directly tied to "{title}".
+{banned_clause}
 
 Craft a complete viral direct-response campaign tailored to this awareness stage in strict JSON format:
 {{

@@ -54,9 +54,9 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "-1004295934068").strip()
 STUDIO_PUBLIC_URL = os.getenv("STUDIO_PUBLIC_URL", "https://cafeqr-marketing-studio.onrender.com").rstrip("/")
 
-# Autonomous Background Scheduler (Runs every 4 hours by default)
+# Autonomous Background Scheduler (Runs twice a day: every 12 hours)
 AUTONOMOUS_CRON_ENABLED = os.getenv("AUTONOMOUS_CRON_ENABLED", "true").lower() in ("true", "1", "yes")
-AUTONOMOUS_CRON_INTERVAL_HOURS = int(os.getenv("AUTONOMOUS_CRON_INTERVAL_HOURS", "4"))
+AUTONOMOUS_CRON_INTERVAL_HOURS = int(os.getenv("AUTONOMOUS_CRON_INTERVAL_HOURS", "12"))
 
 # Supported Multi-Vertical Domains
 SUPPORTED_VERTICALS = [

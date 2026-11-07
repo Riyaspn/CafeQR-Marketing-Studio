@@ -486,6 +486,7 @@ async function publishApprovedCampaign() {
       body: JSON.stringify({
         image_path: currentCampaign ? (currentCampaign.poster_file || currentCampaign.poster_path) : null,
         video_path: currentCampaign ? (currentCampaign.reel_file || currentCampaign.reel_path) : null,
+        headline: currentCampaign ? currentCampaign.headline : '',
         caption: caption,
         facebook: pubFb,
         facebook_story: pubFbStory,

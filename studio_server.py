@@ -447,6 +447,17 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 except Exception as e:
                     print(f"⚠️ [AutoPurge] Error cleaning up published files: {e}")
 
+            # Seal published headline & angle into the anti-repetition vault
+            if any(r.get("success") for r in results):
+                try:
+                    first_line = caption.strip().split("\n")[0] if caption else ""
+                    autonomous_cron.record_processed_story(
+                        title=first_line[:80],
+                        headline=body.get("headline", first_line[:40])
+                    )
+                except Exception as rec_err:
+                    print(f"⚠️ [Publish] Error recording published story: {rec_err}")
+
             self._send_json({"success": True, "results": results, "cleaned_up": all_success})
             return
 
