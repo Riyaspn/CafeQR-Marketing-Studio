@@ -3,6 +3,7 @@ import re
 import uuid
 import base64
 from pathlib import Path
+from PIL import Image, ImageFilter, ImageEnhance
 from playwright.sync_api import sync_playwright
 from config import BASE_DIR, TEMPLATES_DIR, DRAFTS_DIR, ASSETS_DIR
 
@@ -152,7 +153,77 @@ def render_poster(creative_data, width=1080, height=1350, filename=None):
         browser.close()
 
     print(f"✅ Poster rendered: {output_path.name} ({width}x{height})")
+    try:
+        story_path = DRAFTS_DIR / f"story_{output_path.name}"
+        create_story_asset(str(output_path), output_path=str(story_path))
+    except Exception as story_err:
+        print(f"⚠️ [PosterEngine] Companion story generation skipped: {story_err}")
     return str(output_path)
+
+def create_story_asset(image_path, output_path=None):
+    """
+    Transforms any poster image (e.g. 1080x1350 4:5) into a native 1080x1920 (9:16)
+    Instagram/Facebook Story asset.
+    - Zero cropping of text or graphics.
+    - 285px safe zones at top & bottom for Instagram Story UI elements.
+    - Atmospheric ambient blurred background sampled from the poster.
+    """
+    if not image_path or not os.path.exists(image_path):
+        return image_path
+
+    try:
+        with Image.open(image_path) as img:
+            img = img.convert("RGBA")
+            orig_w, orig_h = img.size
+
+            # If already ~9:16 (within 2% tolerance), return original
+            aspect = orig_w / orig_h
+            if abs(aspect - (9 / 16)) < 0.02:
+                return image_path
+
+            target_w = 1080
+            target_h = 1920
+
+            # 1. Base dark background (#080C14)
+            canvas = Image.new("RGBA", (target_w, target_h), (8, 12, 20, 255))
+
+            # 2. Atmospheric ambient blur from original poster
+            bg_stretched = img.resize((target_w, target_h), Image.Resampling.BILINEAR)
+            bg_blurred = bg_stretched.filter(ImageFilter.GaussianBlur(radius=45))
+            enhancer = ImageEnhance.Brightness(bg_blurred)
+            bg_darkened = enhancer.enhance(0.30)
+            canvas.paste(bg_darkened, (0, 0))
+
+            # 3. Fit original poster into 1080 width preserving aspect ratio
+            scale = target_w / orig_w
+            new_w = target_w
+            new_h = int(orig_h * scale)
+
+            # Keep within safe story height (max 1450px) to preserve safe zones
+            if new_h > 1450:
+                scale = 1400 / orig_h
+                new_h = 1400
+                new_w = int(orig_w * scale)
+
+            poster_resized = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
+
+            # 4. Center poster vertically & horizontally
+            offset_x = (target_w - new_w) // 2
+            offset_y = (target_h - new_h) // 2
+
+            canvas.paste(poster_resized, (offset_x, offset_y), poster_resized)
+
+            # 5. Output path
+            if not output_path:
+                stem = Path(image_path).stem
+                output_path = str(Path(image_path).parent / f"story_{stem}.png")
+
+            canvas.convert("RGB").save(output_path, "PNG", quality=95)
+            print(f"✅ Generated 9:16 Story Asset: {os.path.basename(output_path)} ({target_w}x{target_h})")
+            return output_path
+    except Exception as e:
+        print(f"⚠️ Error formatting story image: {e}")
+        return image_path
 
 if __name__ == "__main__":
     test_data = {

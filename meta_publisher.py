@@ -126,12 +126,11 @@ def publish_to_facebook_page(image_path=None, video_path=None, caption="", image
     """
     Publishes a photo or video directly to the Facebook Page using multipart upload,
     or falls back to public URL ingest if image_path is not on local disk.
-    Attaches location/place pin if provided or auto-resolved.
+    Note: Facebook Page Graph API (/{page-id}/photos) rejects city/region page IDs
+    for 'place' with OAuthException #100. Place is omitted for Page-level posts.
     """
     if not META_ACCESS_TOKEN:
         return {"success": False, "error": "Missing Meta Access Token"}
-
-    loc_id = location_id or resolve_location_id(caption)
 
     # Boundary for multipart form-data
     boundary = "----WebKitFormBoundaryCafeQR" + hex(int(time.time() * 1000))[2:]
@@ -142,16 +141,12 @@ def publish_to_facebook_page(image_path=None, video_path=None, caption="", image
         field_name = "source"
         mime_type = "video/mp4"
         extra_fields = {"description": caption, "access_token": META_ACCESS_TOKEN}
-        if loc_id:
-            extra_fields["place"] = loc_id
     elif image_path and os.path.exists(image_path):
         url = f"{BASE_GRAPH_URL}/{CAFE_QR_PAGE_ID}/photos"
         file_path = image_path
         field_name = "source"
         mime_type = "image/png"
         extra_fields = {"caption": caption, "access_token": META_ACCESS_TOKEN}
-        if loc_id:
-            extra_fields["place"] = loc_id
     elif image_url:
         url = f"{BASE_GRAPH_URL}/{CAFE_QR_PAGE_ID}/photos"
         post_params = {
@@ -159,8 +154,6 @@ def publish_to_facebook_page(image_path=None, video_path=None, caption="", image
             "caption": caption,
             "access_token": META_ACCESS_TOKEN
         }
-        if loc_id:
-            post_params["place"] = loc_id
         params = urllib.parse.urlencode(post_params).encode("utf-8")
         req = urllib.request.Request(url, data=params, headers={"User-Agent": "CafeQR-MarketingEngine/2.0"})
         try:

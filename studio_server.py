@@ -177,6 +177,12 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 campaign["poster_url"] = f"/drafts/{poster_filename}"
                 campaign["poster_file"] = poster_path
 
+                story_filename = f"story_{poster_filename}"
+                story_path = DRAFTS_DIR / story_filename
+                if story_path.exists():
+                    campaign["story_url"] = f"/drafts/{story_filename}"
+                    campaign["story_file"] = str(story_path)
+
                 # Fast-Path: Poster generation only (Instant ~2s response; Video Reel is generated on-demand via /api/render-reel)
                 campaign["reel_url"] = None
 
@@ -195,13 +201,20 @@ class StudioHandler(SimpleHTTPRequestHandler):
         elif path == "/api/render-poster":
             creative_data = body.get("creative", {})
             poster_path = poster_engine.render_poster(creative_data)
+            poster_filename = os.path.basename(poster_path)
+            story_filename = f"story_{poster_filename}"
+            story_path = DRAFTS_DIR / story_filename
             eval_data = score_creative(creative_data)
-            self._send_json({
+            resp = {
                 "success": True,
-                "poster_url": f"/drafts/{os.path.basename(poster_path)}",
+                "poster_url": f"/drafts/{poster_filename}",
                 "poster_file": poster_path,
                 "evaluation": eval_data
-            })
+            }
+            if story_path.exists():
+                resp["story_url"] = f"/drafts/{story_filename}"
+                resp["story_file"] = str(story_path)
+            self._send_json(resp)
             return
 
         # 2b. API: Live Viral Evaluation of Copy
@@ -290,6 +303,28 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 except Exception as ex:
                     print(f"⚠️ [Publish] Error resolving local path from public_media_url: {ex}")
 
+            # If target_fb_story or target_story is selected for an image, prepare 9:16 story asset (1080x1920)
+            story_media_url = public_media_url
+            story_image_path = None
+            if (target_fb_story or target_story) and not video_path:
+                try:
+                    if image_path and os.path.exists(image_path):
+                        story_image_path = poster_engine.create_story_asset(image_path)
+                    elif public_media_url:
+                        cand_name = os.path.basename(urlparse(public_media_url).path)
+                        cand_file = DRAFTS_DIR / cand_name
+                        if cand_file.exists():
+                            story_image_path = poster_engine.create_story_asset(str(cand_file))
+
+                    if story_image_path and os.path.exists(story_image_path) and public_media_url:
+                        story_filename = os.path.basename(story_image_path)
+                        parsed_u = urlparse(public_media_url)
+                        base_prefix = f"{parsed_u.scheme}://{parsed_u.netloc}"
+                        story_media_url = f"{base_prefix}/drafts/{story_filename}"
+                        print(f"📱 [Publish] Story endpoints using 9:16 uncropped asset: {story_media_url}")
+                except Exception as story_prep_err:
+                    print(f"⚠️ [Publish] Error preparing 9:16 story asset: {story_prep_err}")
+
             results = []
 
             # Post to Facebook Page
@@ -306,12 +341,13 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 except Exception as fb_err:
                     results.append({"platform": "Facebook Page", "success": False, "error": str(fb_err)})
 
-            # Post to Facebook Story
+            # Post to Facebook Story (using 9:16 story asset for photos)
             if target_fb_story:
-                if public_media_url:
+                use_fb_story_url = story_media_url if not video_path else public_media_url
+                if use_fb_story_url:
                     try:
                         fb_story_res = meta_publisher.publish_to_facebook_story(
-                            media_public_url=public_media_url,
+                            media_public_url=use_fb_story_url,
                             is_video=bool(video_path)
                         )
                         results.append(fb_story_res)
@@ -344,12 +380,13 @@ class StudioHandler(SimpleHTTPRequestHandler):
                         "error": "Instagram requires a public HTTPS URL."
                     })
 
-            # Post to Instagram Story
+            # Post to Instagram Story (using 9:16 story asset for photos)
             if target_story:
-                if public_media_url:
+                use_ig_story_url = story_media_url if not video_path else public_media_url
+                if use_ig_story_url:
                     try:
                         story_res = meta_publisher.publish_to_instagram_story(
-                            media_public_url=public_media_url,
+                            media_public_url=use_ig_story_url,
                             is_video=bool(video_path)
                         )
                         results.append(story_res)
@@ -382,13 +419,16 @@ class StudioHandler(SimpleHTTPRequestHandler):
                         "error": "Threads requires a public HTTPS URL."
                     })
 
-            # Auto-purge published image/video from disk & database upon successful posting
-            any_success = any(r.get("success") for r in results)
-            if any_success:
+            # Auto-purge published image/video from disk & database ONLY when all selected destinations succeed
+            all_success = len(results) > 0 and all(r.get("success") for r in results)
+            if all_success:
                 try:
                     if image_path and os.path.exists(image_path):
                         os.remove(image_path)
                         print(f"🗑️ [AutoPurge] Deleted published poster from disk: {image_path}")
+                    if story_image_path and os.path.exists(story_image_path):
+                        os.remove(story_image_path)
+                        print(f"🗑️ [AutoPurge] Deleted published story asset from disk: {story_image_path}")
                     if video_path and os.path.exists(video_path):
                         os.remove(video_path)
                         print(f"🗑️ [AutoPurge] Deleted published video from disk: {video_path}")
@@ -407,7 +447,7 @@ class StudioHandler(SimpleHTTPRequestHandler):
                 except Exception as e:
                     print(f"⚠️ [AutoPurge] Error cleaning up published files: {e}")
 
-            self._send_json({"success": True, "results": results, "cleaned_up": any_success})
+            self._send_json({"success": True, "results": results, "cleaned_up": all_success})
             return
 
         # 4b. API: Test Telegram Alert Bot

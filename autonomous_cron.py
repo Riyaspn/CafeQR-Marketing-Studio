@@ -60,6 +60,13 @@ def save_campaign_draft(campaign):
                     print(f"🗑️ [AutoPrune] Cleaned up older draft image: {old_p}")
                 except Exception:
                     pass
+            old_s = old_d.get("story_path")
+            if old_s and os.path.exists(old_s):
+                try:
+                    os.remove(old_s)
+                    print(f"🗑️ [AutoPrune] Cleaned up older story image: {old_s}")
+                except Exception:
+                    pass
         drafts = drafts[:5]
 
     with open(DRAFTS_INDEX, "w", encoding="utf-8") as f:
@@ -104,12 +111,19 @@ def run_autonomous_poster_cycle():
         # 1. Generate Campaign with 4 Masters & Awareness Alignment
         campaign = creative_brain.generate_creative_campaign(fresh_candidate)
 
-        # 2. Render High-Res Poster PNG
+        # 2. Render High-Res Poster PNG (and automatic 9:16 Story asset)
         poster_filename = f"auto_{int(time.time())}_{campaign.get('target_vertical', 'post').lower()[:12].replace(' ', '_')}.png"
         poster_path = poster_engine.render_poster(campaign, filename=poster_filename)
         campaign["poster_path"] = poster_path
         campaign["poster_file"] = poster_path
         campaign["poster_url"] = f"/drafts/{poster_filename}"
+
+        story_filename = f"story_{poster_filename}"
+        story_path = DRAFTS_DIR / story_filename
+        if story_path.exists():
+            campaign["story_path"] = str(story_path)
+            campaign["story_file"] = str(story_path)
+            campaign["story_url"] = f"/drafts/{story_filename}"
 
         # 3. Save to Studio Drafts Gallery
         save_campaign_draft(campaign)
